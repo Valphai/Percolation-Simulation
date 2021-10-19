@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -10,7 +9,7 @@ namespace PlayMode
     public class CoordinatesTest
     {
         [UnityTest]
-        public IEnumerator Coordinates_Match()
+        public IEnumerator Disks_Match_Bins()
         {
             GameObject g = new GameObject();
             g.transform.position = Vector3.zero;

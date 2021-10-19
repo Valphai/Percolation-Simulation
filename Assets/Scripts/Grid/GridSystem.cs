@@ -8,6 +8,7 @@ namespace Grid
         public int width;
         public int height;
         public GridBin[] bins { get; private set; }
+        public UnionFind UnionFind  { get; private set; }
         [SerializeField] private GridMesh gridMesh;
         [SerializeField] private int diskBoundLower, diskBoundHigher;
         [SerializeField] private GridBin binPrefab;
@@ -47,6 +48,8 @@ namespace Grid
             //     AddDisk(distribution[j], distribution[k]);
             // }
             int n = Random.Range(diskBoundLower, diskBoundHigher);
+            UnionFind = new UnionFind(n);
+
             for (int i = 0; i < n; i++)
             {
                 float x = Random.Range(0f, width * 2 - 1);
