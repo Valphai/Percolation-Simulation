@@ -21,7 +21,7 @@ namespace Grid
             disks = new List<Disk>();
             neighbors = new GridBin[8];
         }
-        public void AddDisk(Disk disk)
+        public void AddDisk(Disk disk, UnionFind uf, int L)
         {
             disks.Add(disk);
 
@@ -31,14 +31,19 @@ namespace Grid
             // go through all neigbors
             foreach (GridBin bin in neighbors)
             {
-                for (int i = 0; i < bin.disks.Count; i++)
+                if (bin)
                 {
-                    Vector3 v2 = bin.disks[i].Position;
-                    Vector3 diskDistance = v2 - v1;
-
-                    if (diskDistance.magnitude < 2f * Metrics.DiskRadius)
+                    for (int i = 0; i < bin.disks.Count; i++)
                     {
-                        // overlaps
+                        Vector3 v2 = bin.disks[i].Position;
+                        Vector3 diskDistance = v2 - v1;
+    
+                        if (diskDistance.magnitude < 2f * Metrics.DiskRadius)
+                        {
+                            // overlaps
+                            uf.Union(disk.DiskIndex, disk, 
+                                    bin.disks[i].DiskIndex, bin.disks[i], L);
+                        }
                     }
                 }
             }

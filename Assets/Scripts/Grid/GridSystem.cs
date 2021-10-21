@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 
@@ -5,27 +6,29 @@ namespace Grid
 {
     public class GridSystem : MonoBehaviour
     {
-        public int width;
-        public int height;
+        public int L;
         public GridBin[] bins { get; private set; }
-        public UnionFind UnionFind  { get; private set; }
-        [SerializeField] private GridMesh gridMesh;
+        public static Disk[] Disks;
+        private UnionFind unionFind;
         [SerializeField] private int diskBoundLower, diskBoundHigher;
+        [SerializeField] private float diskAddingTime;
+        [SerializeField] private GridMesh gridMesh;
         [SerializeField] private GridBin binPrefab;
         [SerializeField] private Disk diskPrefab;
         [SerializeField] private TextMeshProUGUI labelPrefab;
+        [SerializeField] private bool coroutineStart;
         [SerializeField] private Canvas gridCanvas;
-    
+
         private void Awake() 
         {
     		gridCanvas = GetComponentInChildren<Canvas>();
     		gridMesh = GetComponentInChildren<GridMesh>();
     
-    		bins = new GridBin[height * width];
+    		bins = new GridBin[L * L];
     
-    		for (int z = 0, i = 0; z < height; z++) 
+    		for (int z = 0, i = 0; z < L; z++) 
             {
-    			for (int x = 0; x < width; x++) 
+    			for (int x = 0; x < L; x++) 
                 {
     				CreateBin(x, z, i++);
     			}
@@ -48,16 +51,17 @@ namespace Grid
             //     AddDisk(distribution[j], distribution[k]);
             // }
             int n = Random.Range(diskBoundLower, diskBoundHigher);
-            UnionFind = new UnionFind(n);
-
+            unionFind = new UnionFind(n);
+            Disks = new Disk[n];
+            
             for (int i = 0; i < n; i++)
             {
-                float x = Random.Range(0f, width * 2 - 1);
-                float z = Random.Range(0f, width * 2 - 1);
-                AddDisk(x, z);
+                float x = Random.Range(0f, L * 2 - 1);
+                float z = Random.Range(0f, L * 2 - 1);
+                AddDisk(x, z, i, unionFind);
             }
         }
-        public void AddDisk(float x, float z)
+        public void AddDisk(float x, float z, int i, UnionFind unionFind)
         {
             Vector3 position = new Vector3(
                 x,
@@ -67,18 +71,19 @@ namespace Grid
     
             Disk disk = Instantiate<Disk>(diskPrefab);
             disk.Position = position;
+            disk.DiskIndex = i;
     
             disk.Coordinates = Coordinates.FromVectorCoords(position);
     
             // find disk its on
-            GetBin(disk.Coordinates).AddDisk(disk);
+            GetBin(disk.Coordinates).AddDisk(disk, unionFind, L);
     
             SetLabel(position, disk.Coordinates, Color.blue, 
                     Metrics.DiskFontSize, Metrics.DiskLabelHeight, Metrics.DiskRadius);
         }
         public GridBin GetBin(Coordinates coords) 
         {    
-    		int index = coords.x + coords.z * width;
+    		int index = coords.x + coords.z * L;
     		return bins[index];
     	}
     
@@ -103,14 +108,14 @@ namespace Grid
             }
             if (z > 0)
             {
-                bin.SetNeighbor(Direction.S, bins[i - width]);
+                bin.SetNeighbor(Direction.S, bins[i - L]);
                 if (x > 0)
                 {
-                    bin.SetNeighbor(Direction.SW, bins[i - width - 1]);
+                    bin.SetNeighbor(Direction.SW, bins[i - L - 1]);
                 }
-                if (x < width - 1)
+                if (x < L - 1)
                 {
-                    bin.SetNeighbor(Direction.SE, bins[i - width + 1]);
+                    bin.SetNeighbor(Direction.SE, bins[i - L + 1]);
                 }
             }
     

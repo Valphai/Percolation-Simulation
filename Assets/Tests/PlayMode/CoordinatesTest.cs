@@ -11,6 +11,21 @@ namespace PlayMode
         [UnityTest]
         public IEnumerator Disks_Match_Bins()
         {
+            GridSystem grid = GridSetup();
+
+            for (int i = 0; i < grid.bins.Length; i++)
+            {
+                var binCoords = grid.bins[i].Coordinates;
+                var diskCoords = grid.bins[i].disks[0].Coordinates;
+                Assert.AreEqual(new Vector2(binCoords.x, binCoords.z),
+                                    new Vector2(diskCoords.x, diskCoords.z));
+            }
+
+            yield return null;
+        }
+
+        private static GridSystem GridSetup()
+        {
             GameObject g = new GameObject();
             g.transform.position = Vector3.zero;
 
@@ -20,16 +35,7 @@ namespace PlayMode
 
             g.AddComponent(typeof(GridSystem));
             GridSystem grid = g.GetComponent<GridSystem>();
-    
-            for (int i = 0; i < grid.bins.Length; i++)
-            {
-                var binCoords = grid.bins[i].Coordinates;
-                var diskCoords = grid.bins[i].disks[0].Coordinates;
-                Assert.AreEqual(new Vector2(binCoords.x, binCoords.z), 
-                                    new Vector2(diskCoords.x, diskCoords.z));
-            }
-
-            yield return null;
+            return grid;
         }
     }
 }
