@@ -6,6 +6,7 @@ namespace Grid
     {
         public int DiskIndex { get; set; }
         public Coordinates Coordinates;
+        public RectTransform UiRect;
         public Vector3 Position
         {
             get { return transform.localPosition; }
@@ -35,16 +36,12 @@ namespace Grid
                 meshRenderer.material.color = color;
             }
         }
-        public Vector3Int IntVectorPositon()
-        {
-            return new Vector3Int(Coordinates.x, 0, Coordinates.z);
-        }
     
         private void Awake()	
         {
             meshRenderer = GetComponent<MeshRenderer>();
             Color = Color.yellow;
-            GridSystem.Disks[DiskIndex] = this;
+            Position = Vector3.zero;
 
             transform.localScale = new Vector3(Metrics.DiskRadius * 2, .01f, Metrics.DiskRadius * 2);
         }

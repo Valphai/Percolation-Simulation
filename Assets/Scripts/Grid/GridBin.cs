@@ -6,6 +6,8 @@ namespace Grid
     public class GridBin : MonoBehaviour
     {
         public Coordinates Coordinates;
+        public RectTransform UiRect;
+        
         public Vector3Int Position 
         {
             get

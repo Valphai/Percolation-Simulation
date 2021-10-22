@@ -22,6 +22,10 @@ namespace Grid
     
             return new Coordinates(iX, iZ);
         }
+        public Vector3Int IntVectorPositon()
+        {
+            return new Vector3Int(x, 0, z);
+        }
         public override string ToString() 
         {
     		return "(" + x.ToString() + ", " + z.ToString() + ")";

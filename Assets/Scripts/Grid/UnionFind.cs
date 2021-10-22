@@ -4,6 +4,8 @@ namespace Grid
 {
     public class UnionFind
     {
+        public int firstClusterN;
+        public static Disk[] Disks;
         private int[] parent;
     
         /// <summary> size of each group </summary>
@@ -13,31 +15,34 @@ namespace Grid
         /// <summary> number of groups </summary>
         private int count;
     
+        private bool firstClusterOccured;
         public UnionFind(int n)
         {
             count = n;
             parent = new int[n];
             size = new int[n];
+            Disks = new Disk[n];
             // displacementVectors = new Vector3Int[n];
     
             // parent nodes to themselves at the beggining
-            for (int i = 0; i < n; i++) 
-            {
-                parent[i] = i;
-                size[i] = 1;
-            }
+            // for (int i = 0; i < n; i++) 
+            // {
+            //     parent[i] = i;
+            //     size[i] = 1;
+            // }
         }
+
         public void Union(int p, Disk dP, int q, Disk dQ, int L) 
         {
             Vector3Int displacementP;
             Vector3Int displacementQ;
-            int rootP = Find(p, out displacementP); // these must return displacement vectors
+            int rootP = Find(p, out displacementP);
             int rootQ = Find(q, out displacementQ);
     
             // in the same group
             if (rootP == rootQ) 
             {
-                dP.Color = dQ.Color;
+                // dP.Color = Disks[rootQ].Color;
                 // here we sum displacement vectors if they differ by +- L => 
                 if (Mathf.Abs(displacementP.x - displacementQ.x) >= L ||
                     Mathf.Abs(displacementP.y - displacementQ.y) >= L ||
@@ -45,7 +50,8 @@ namespace Grid
                 {
                     // cluster has a nontrivial winding number around one or
                     // both directions on the torus.
-                    Debug.Log("Nontrivial");
+                    firstClusterOccured = true;
+                    firstClusterN = p;
                 }
 
                 return;
@@ -56,19 +62,11 @@ namespace Grid
             {
                 parent[rootP] = rootQ;
                 size[rootQ] += size[rootP];
-
-                dP.Color = dQ.Color;
-                // displacementVectors[p] = dP.IntVectorPositon() - 
-                //             GridSystem.Disks[rootQ].IntVectorPositon();
             }
             else 
             {
                 parent[rootQ] = rootP;
                 size[rootP] += size[rootQ];
-
-                dQ.Color = dP.Color;
-                // displacementVectors[q] = dQ.IntVectorPositon() - 
-                //             GridSystem.Disks[rootP].IntVectorPositon();
             }
             count--;
         }
@@ -94,12 +92,8 @@ namespace Grid
             // path splitting
             while (p != parent[p])
             {
-                
-                // if (GridSystem.Disks[p])
-                // {
-                //     displacementVectors[p] = GridSystem.Disks[p].IntVectorPositon();
-                //     v1 += displacementVectors[p];
-                // }
+                v1 += Disks[p].Coordinates.IntVectorPositon() - 
+                      Disks[parent[p]].Coordinates.IntVectorPositon();
 
                 int temp = parent[p];
                 parent[p] = parent[parent[p]];
@@ -107,6 +101,16 @@ namespace Grid
             }
             return p;
         }
+
+        public void TickDisk(Disk disk, int i)
+        {
+            disk.DiskIndex = i;
+            Disks[i] = disk;
+
+            parent[i] = i;
+            size[i] = 1;
+        }
+
         // public bool Connected(int p, int q) 
         // {
         //     return Find(p) == Find(q);

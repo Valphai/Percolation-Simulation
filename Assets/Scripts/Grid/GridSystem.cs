@@ -1,4 +1,3 @@
-using System.Collections;
 using TMPro;
 using UnityEngine;
 
@@ -8,8 +7,7 @@ namespace Grid
     {
         public int L;
         public GridBin[] bins { get; private set; }
-        public static Disk[] Disks;
-        private UnionFind unionFind;
+        public UnionFind unionFind { get; private set; }
         [SerializeField] private int diskBoundLower, diskBoundHigher;
         [SerializeField] private float diskAddingTime;
         [SerializeField] private GridMesh gridMesh;
@@ -52,8 +50,13 @@ namespace Grid
             // }
             int n = Random.Range(diskBoundLower, diskBoundHigher);
             unionFind = new UnionFind(n);
-            Disks = new Disk[n];
-            
+           
+            // for (int i = 0; i < n; i++)
+            // {
+            //     Disk disk = Instantiate<Disk>(diskPrefab);
+            //     disk.DiskIndex = i;
+            //     UnionFind.Disks[i] = disk;
+            // }
             for (int i = 0; i < n; i++)
             {
                 float x = Random.Range(0f, L * 2 - 1);
@@ -70,15 +73,16 @@ namespace Grid
             );
     
             Disk disk = Instantiate<Disk>(diskPrefab);
+            unionFind.TickDisk(disk, i);
+            
             disk.Position = position;
-            disk.DiskIndex = i;
     
             disk.Coordinates = Coordinates.FromVectorCoords(position);
     
             // find disk its on
             GetBin(disk.Coordinates).AddDisk(disk, unionFind, L);
     
-            SetLabel(position, disk.Coordinates, Color.blue, 
+            SetLabel(position, disk.Coordinates, Color.blue, out disk.UiRect,
                     Metrics.DiskFontSize, Metrics.DiskLabelHeight, Metrics.DiskRadius);
         }
         public GridBin GetBin(Coordinates coords) 
@@ -119,12 +123,12 @@ namespace Grid
                 }
             }
     
-            SetLabel(position, bin.Coordinates, Color.white, 
+            SetLabel(position, bin.Coordinates, Color.white, out bin.UiRect,
                     Metrics.BinFontSize, Metrics.BinLabelHeight, diameter);
         }
     
         private void SetLabel(
-            Vector3 position, Coordinates coords, Color c,
+            Vector3 position, Coordinates coords, Color c, out RectTransform r,
             float fontSize, float height, int scale)
         {
             TextMeshProUGUI label = Instantiate<TextMeshProUGUI>(labelPrefab);
@@ -136,6 +140,7 @@ namespace Grid
             label.color = c;
             label.fontSize = fontSize;
             label.rectTransform.localScale = Vector3.one * scale;
+            r = label.rectTransform;
         }
     }
 }

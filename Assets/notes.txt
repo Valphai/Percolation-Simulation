@@ -6,8 +6,20 @@ a = object area
 φ = 1 − e^−η = total fraction of the plane covered by the objects
 representative = cluster parent
 
+R_L(η) = wrapping probability functions 
+R^e_L(η) = the probability of any kind of wrapping cluster. 
+R^h_L(η) = the probability of a cluster that wraps horizontally.
+R^1_L(η) = the probability of a cluster that wraps horizontally, but not vertically
+R^b_L(η) = the probability of a cluster that wraps both horizontally and vertically
+
+horizontal and vertical wrapping probabilities are equal
+
 disks are thrown at random in the L square (Poisson point process)
 
 take a look at grid bin AddDisk, gotta fiddle with union find now
 
 they do both splitting and compression?
+
+
+sum down all to smallest n => P_L(a, n) is non zero
+sum up all to highest n => P_L(a, n) is 1
