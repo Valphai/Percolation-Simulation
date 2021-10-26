@@ -22,9 +22,9 @@ namespace Grid
                 {
                     // randomize color
                     color = new Color(
-                    Random.Range(0f, 1f),
-                    Random.Range(0f, 1f),
-                    Random.Range(0f, 1f),
+                    Random.value,
+                    Random.value,
+                    Random.value,
                     1);
                     meshRenderer.material.color = color;
                 }
