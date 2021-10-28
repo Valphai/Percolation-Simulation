@@ -7,7 +7,7 @@ namespace Calculations
     {
         // private static int[] firstClusterNs;
 
-        private static GridSystem GridSetup()
+        private static GridSystem GridSetup(int numOfDisks, int L)
         {
             GameObject g = new GameObject();
             g.transform.position = Vector3.zero;
@@ -18,23 +18,31 @@ namespace Calculations
 
             g.AddComponent(typeof(GridSystem));
             GridSystem grid = g.GetComponent<GridSystem>();
+
+            grid.L = L;
+            grid.SetupGrid(numOfDisks);
+
             return grid;
         }
 
         public static void RunEnsemble(int n, int L)
         {
-            int[] firstClusterNs = new int[n];
-
+            // int[] firstClusterNs = new int[n];
+            int numOfDisks = 600;
             for (int i = 0; i < n; i++)
             {
-                GridSystem grid = GridSetup();
-                grid.L = L;
-                firstClusterNs[i] = grid.unionFind.firstClusterN;
-            }
-            int lowN = Mathf.Min(firstClusterNs);
-            int highN = Mathf.Max(firstClusterNs);
+                GridSystem grid = GridSetup(numOfDisks++, L);
 
-            Probabilities.NumOfTrials = n;
+                // float eta = 0f;
+                double R = Probabilities.PercolationProbabilityGCE(grid.n, grid.L,
+                                            grid.unionFind.firstClusterN);
+
+                // firstClusterNs[i] = grid.unionFind.firstClusterN;
+            }
+            // int lowN = Mathf.Min(firstClusterNs);
+            // int highN = Mathf.Max(firstClusterNs);
+
+            // Probabilities.NumOfTrials = grid.n;
             // double R = Probabilities.PercolationProbabilityGCE(, L, lowN, highN);
         }
     }

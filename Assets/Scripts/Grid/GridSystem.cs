@@ -6,64 +6,27 @@ namespace Grid
     public class GridSystem : MonoBehaviour
     {
         public int L;
+        /// <summary>number of disks</summary>
+        public int n { get; private set; }
         public GridBin[] bins { get; private set; }
         public UnionFind unionFind { get; private set; }
-        [SerializeField] private int diskBoundLower, diskBoundHigher;
-        [SerializeField] private float diskAddingTime;
+        // [SerializeField] private int diskBoundLower, diskBoundHigher;
+        // [SerializeField] private float diskAddingTime;
         [SerializeField] private GridMesh gridMesh;
-        [SerializeField] private GridBin binPrefab;
-        [SerializeField] private Disk diskPrefab;
-        [SerializeField] private TextMeshProUGUI labelPrefab;
-        [SerializeField] private bool coroutineStart;
+        [SerializeField] public GridBin binPrefab;
+        [SerializeField] public Disk diskPrefab;
+        [SerializeField] public TextMeshProUGUI labelPrefab;
+        // [SerializeField] private bool coroutineStart;
         [SerializeField] private Canvas gridCanvas;
 
-        private void Awake() 
+        private void Awake()
         {
-    		gridCanvas = GetComponentInChildren<Canvas>();
-    		gridMesh = GetComponentInChildren<GridMesh>();
-    
-    		bins = new GridBin[L * L];
-    
-    		for (int z = 0, i = 0; z < L; z++) 
-            {
-    			for (int x = 0; x < L; x++) 
-                {
-    				CreateBin(x, z, i++);
-    			}
-    		}
-    	}
-        private void Start() 
-        {
-    		gridMesh.Triangulate(bins);
-            PopulateGrid();
-    	}
-    
-        public void PopulateGrid()
-        {
-            // float[] distribution = Metrics.PoissonPointProcess(width, height, 
-            //                                     diskBoundLower, diskBoundHigher);
-            // for (int i = 0; i < distribution.Length; i++)
-            // {
-            //     int j = Random.Range(0, distribution.Length);
-            //     int k = Random.Range(0, distribution.Length);
-            //     AddDisk(distribution[j], distribution[k]);
-            // }
-            int n = Random.Range(diskBoundLower, diskBoundHigher);
-            unionFind = new UnionFind(n);
-           
-            // for (int i = 0; i < n; i++)
-            // {
-            //     Disk disk = Instantiate<Disk>(diskPrefab);
-            //     disk.DiskIndex = i;
-            //     UnionFind.Disks[i] = disk;
-            // }
-            for (int i = 0; i < n; i++)
-            {
-                float x = Random.Range(0f, L * 2 - 1);
-                float z = Random.Range(0f, L * 2 - 1);
-                AddDisk(x, z, i, unionFind);
-            }
+            gridCanvas = GetComponentInChildren<Canvas>();
+            gridMesh = GetComponentInChildren<GridMesh>();
+
+            // CreateBins();
         }
+
         public void AddDisk(float x, float z, int i, UnionFind unionFind)
         {
             Vector3 position = new Vector3(
@@ -79,8 +42,9 @@ namespace Grid
     
             disk.Coordinates = Coordinates.FromVectorCoords(position);
     
-            // find disk its on
-            GetBin(disk.Coordinates).AddDisk(disk, unionFind, L);
+            // find bin its on
+            GridBin bin = GetBin(disk.Coordinates);
+            bin.AddDisk(disk, unionFind, L);
     
             SetLabel(position, disk.Coordinates, Color.blue, out disk.UiRect,
                     Metrics.DiskFontSize, Metrics.DiskLabelHeight, Metrics.DiskRadius);
@@ -90,7 +54,39 @@ namespace Grid
     		int index = coords.x + coords.z * L;
     		return bins[index];
     	}
+        public void SetupGrid(int numOfDisks)
+        {
+            CreateBins();
+    		gridMesh.Triangulate(bins);
+            PopulateGrid(numOfDisks);
+    	}
+        private void CreateBins()
+        {
+            bins = new GridBin[L * L];
+
+            for (int z = 0, i = 0; z < L; z++)
+            {
+                for (int x = 0; x < L; x++)
+                {
+                    CreateBin(x, z, i++);
+                }
+            }
+        }
     
+        private void PopulateGrid(int numOfDisks)
+        {
+            n = numOfDisks; //Random.Range(diskBoundLower, diskBoundHigher);
+            unionFind = new UnionFind(n);
+           
+            for (int i = 0; i < n; i++)
+            {
+                if (unionFind.FirstClusterOccured) return;
+
+                float x = Random.Range(0f, L * 2 - 1);
+                float z = Random.Range(0f, L * 2 - 1);
+                AddDisk(x, z, i, unionFind);
+            }
+        }
         private void CreateBin(int x, int z, int i)
         {
             int diameter = Metrics.DiskRadius * 2;

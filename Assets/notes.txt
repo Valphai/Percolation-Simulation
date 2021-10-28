@@ -23,3 +23,8 @@ they do both splitting and compression?
 
 sum down all to smallest n => P_L(a, n) is non zero
 sum up all to highest n => P_L(a, n) is 1
+
+
+for each simulation calculate ρ, then calculate η = ρa 
+
+(5) is essentially saying what critical factor η_L gives R_L = 1

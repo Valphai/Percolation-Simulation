@@ -16,12 +16,12 @@ namespace Grid
             }
         } // getter for mesh triangulation
         public List<Disk> disks { get; private set; }
-        [SerializeField] private GridBin[] neighbors;
+        [SerializeField] public GridBin[] Neighbors { get; private set; }
     
         private void Awake()	
         {
             disks = new List<Disk>();
-            neighbors = new GridBin[8];
+            Neighbors = new GridBin[8];
         }
         public void AddDisk(Disk disk, UnionFind uf, int L)
         {
@@ -31,7 +31,7 @@ namespace Grid
             Vector3 v1 = disk.Position;
 
             // go through all neigbors
-            foreach (GridBin bin in neighbors)
+            foreach (GridBin bin in Neighbors)
             {
                 if (bin)
                 {
@@ -56,12 +56,12 @@ namespace Grid
     
         public GridBin GetNeighbor(Direction direction) 
         {
-    		return neighbors[(int)direction];
+    		return Neighbors[(int)direction];
     	}
         public void SetNeighbor(Direction direction, GridBin bin) 
         {
-    		neighbors[(int)direction] = bin;
-    		bin.neighbors[(int)direction.Opposite()] = this;
+    		Neighbors[(int)direction] = bin;
+    		bin.Neighbors[(int)direction.Opposite()] = this;
     	}
     }
 }

@@ -37,5 +37,17 @@ namespace Calculations
             double n_hat = Mathf.Floor(lambda);
             return lambda / (n_hat + k) * OmegaRight(lambda, k + 1);
         }
+        public static float Factorial(int n)
+        {
+            int count = n;
+            float result = 1;
+    
+            while (count >= 1)
+            {
+                result *= count;
+                count--;
+            }
+            return result;
+        }
     }
 }

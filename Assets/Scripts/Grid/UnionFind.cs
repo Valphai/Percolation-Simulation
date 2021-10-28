@@ -4,6 +4,7 @@ namespace Grid
 {
     public class UnionFind
     {
+        /// <summary>Number of disks needed to create a cluster</summary>
         public int firstClusterN;
         public static Disk[] Disks;
         private int[] parent;
@@ -15,7 +16,7 @@ namespace Grid
         /// <summary> number of groups </summary>
         private int count;
     
-        private bool firstClusterOccured;
+        public bool FirstClusterOccured { get; private set; }
         public UnionFind(int n)
         {
             count = n;
@@ -50,7 +51,7 @@ namespace Grid
                 {
                     // cluster has a nontrivial winding number around one or
                     // both directions on the torus.
-                    firstClusterOccured = true;
+                    FirstClusterOccured = true;
                     firstClusterN = p;
                 }
 
@@ -110,11 +111,6 @@ namespace Grid
             parent[i] = i;
             size[i] = 1;
         }
-
-        // public bool Connected(int p, int q) 
-        // {
-        //     return Find(p) == Find(q);
-        // }
         /// <summary>
         /// Validate that node p is in bounds
         /// </summary>

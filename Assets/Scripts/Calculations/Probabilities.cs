@@ -29,6 +29,19 @@ namespace Calculations
 
             return (leftPart + rightPart) / omega;
         }
+        public static double PercolationProbabilityGCE(int n, int L, int nWhenClusterAppears)
+        {
+            float lambda = Utilities.FillingFactor(n, L) * L * L / Grid.Metrics.DiskRadius;
+            double R = Mathf.Exp(-lambda);
+
+            double sum = 0;
+            for (int i = 0; i < nWhenClusterAppears; i++)
+            {
+                sum += Mathf.Pow(lambda, i) / Utilities.Factorial(i) * PercolationExistsProbability(i);
+            }
+
+            return R * sum;
+        }
         
         /// <summary>
         /// Defined with P_L(a, n)
