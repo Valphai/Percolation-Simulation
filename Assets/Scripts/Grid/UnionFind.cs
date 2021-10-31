@@ -37,22 +37,37 @@ namespace Grid
         {
             Vector3Int displacementP;
             Vector3Int displacementQ;
+
+            // here we sum displacement vectors
             int rootP = Find(p, out displacementP);
             int rootQ = Find(q, out displacementQ);
     
             // in the same group
             if (rootP == rootQ) 
             {
-                // dP.Color = Disks[rootQ].Color;
-                // here we sum displacement vectors if they differ by +- L => 
-                if (Mathf.Abs(displacementP.x - displacementQ.x) >= L ||
-                    Mathf.Abs(displacementP.y - displacementQ.y) >= L ||
-                    Mathf.Abs(displacementP.z - displacementQ.z) >= L)
+                // if displacement vec differ by +- L => 
+                displacementP = new Vector3Int(System.Math.Abs(displacementP.x),
+                                                System.Math.Abs(displacementP.y),
+                                                System.Math.Abs(displacementP.z));
+                displacementQ = new Vector3Int(System.Math.Abs(displacementQ.x),
+                                                System.Math.Abs(displacementQ.y),
+                                                System.Math.Abs(displacementQ.z));
+                if (displacementP.x + displacementQ.x >= L || 
+                    displacementP.y + displacementQ.y >= L || 
+                    displacementP.z + displacementQ.z >= L)
                 {
                     // cluster has a nontrivial winding number around one or
                     // both directions on the torus.
                     FirstClusterOccured = true;
                     firstClusterN = p;
+
+                    // for (int i = 0; i < Disks.Length; i++)
+                    // {
+                    //     if (parent[i] == parent[p])
+                    //     {
+                    //         Disks[i].Color = Color.red;
+                    //     }
+                    // }
                 }
 
                 return;
@@ -82,7 +97,8 @@ namespace Grid
             //     root = parent[root];
             // }
             
-            // path compression
+            // int root = parent[p];
+            // // path compression
             // while (p != root) 
             // {
             //     int newP = parent[p];
@@ -93,12 +109,13 @@ namespace Grid
             // path splitting
             while (p != parent[p])
             {
-                v1 += Disks[p].Coordinates.IntVectorPositon() - 
-                      Disks[parent[p]].Coordinates.IntVectorPositon();
+                int next = parent[p];
+                parent[p] = parent[next];
 
-                int temp = parent[p];
-                parent[p] = parent[parent[p]];
-                p = temp;
+                v1 += Disks[next].Coordinates.IntVectorPositon() - 
+                      Disks[p].Coordinates.IntVectorPositon();
+                
+                p = next;
             }
             return p;
         }
@@ -111,17 +128,5 @@ namespace Grid
             parent[i] = i;
             size[i] = 1;
         }
-        /// <summary>
-        /// Validate that node p is in bounds
-        /// </summary>
-        private void Validate(int p) 
-        {
-            int n = parent.Length;
-            if (p < 0 || p >= n) 
-            {
-                throw new System.Exception("index " + p + " is not between 0 and " + (n - 1));  
-            }
-        }
     }
-    
 }

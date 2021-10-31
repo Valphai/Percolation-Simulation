@@ -37,6 +37,8 @@ namespace Grid
                 {
                     for (int i = 0; i < bin.disks.Count; i++)
                     {
+                        if (uf.FirstClusterOccured) return;
+
                         Vector3 v2 = bin.disks[i].Position;
                         Vector3 diskDistance = v2 - v1;
     

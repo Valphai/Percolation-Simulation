@@ -1,5 +1,7 @@
 using TMPro;
+using UnityEditor;
 using UnityEngine;
+
 
 namespace Grid
 {
@@ -23,8 +25,35 @@ namespace Grid
         {
             gridCanvas = GetComponentInChildren<Canvas>();
             gridMesh = GetComponentInChildren<GridMesh>();
+        }
+        // private void Start() 
+        // {
+        //     SetupGrid(3000);
+        // }
+        public static GridSystem GridSetup(int numOfDisks = 600, int L = 40)
+        {
+            GameObject g = new GameObject();
+            g.transform.position = Vector3.zero;
 
-            // CreateBins();
+            GameObject p = new GameObject();
+            p.transform.SetParent(g.transform, false);
+            p.AddComponent(typeof(GridMesh));
+
+            GameObject c = new GameObject();
+            c.transform.SetParent(g.transform, false);
+            c.AddComponent(typeof(Canvas));
+
+            g.AddComponent(typeof(GridSystem));
+            GridSystem grid = g.GetComponent<GridSystem>();
+            grid.L = L;
+
+            grid.binPrefab = AssetDatabase.LoadAssetAtPath<GridBin>("Assets/Prefabs/Grid/Bin.prefab");
+            grid.diskPrefab = AssetDatabase.LoadAssetAtPath<Disk>("Assets/Prefabs/Grid/Disk.prefab");
+            grid.labelPrefab = AssetDatabase.LoadAssetAtPath<TextMeshProUGUI>("Assets/Prefabs/Grid/Label.prefab");
+
+            grid.SetupGrid(numOfDisks);
+            
+            return grid;
         }
 
         public void AddDisk(float x, float z, int i, UnionFind unionFind)
@@ -39,7 +68,8 @@ namespace Grid
             unionFind.TickDisk(disk, i);
             
             disk.Position = position;
-    
+            disk.transform.SetParent(transform, true);
+
             disk.Coordinates = Coordinates.FromVectorCoords(position);
     
             // find bin its on
@@ -57,7 +87,7 @@ namespace Grid
         public void SetupGrid(int numOfDisks)
         {
             CreateBins();
-    		gridMesh.Triangulate(bins);
+    		// gridMesh.Triangulate(bins);
             PopulateGrid(numOfDisks);
     	}
         private void CreateBins()
@@ -75,15 +105,15 @@ namespace Grid
     
         private void PopulateGrid(int numOfDisks)
         {
-            n = numOfDisks; //Random.Range(diskBoundLower, diskBoundHigher);
+            n = numOfDisks;
             unionFind = new UnionFind(n);
            
             for (int i = 0; i < n; i++)
             {
                 if (unionFind.FirstClusterOccured) return;
 
-                float x = Random.Range(0f, L * 2 - 1);
-                float z = Random.Range(0f, L * 2 - 1);
+                float x = UnityEngine.Random.Range(0f, L * 2 - 1);
+                float z = UnityEngine.Random.Range(0f, L * 2 - 1);
                 AddDisk(x, z, i, unionFind);
             }
         }

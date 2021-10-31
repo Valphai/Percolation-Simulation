@@ -10,7 +10,7 @@ namespace PlayMode
         [UnityTest]
         public IEnumerator Disks_Match_Bins()
         {
-            GridSystem grid = Utilities.GridSetup();
+            GridSystem grid = GridSystem.GridSetup();
 
             for (int i = 0; i < grid.bins.Length; i++)
             {

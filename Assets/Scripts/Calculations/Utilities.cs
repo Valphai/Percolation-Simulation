@@ -15,13 +15,13 @@ namespace Calculations
         /// Defined with η
         /// </summary>
         /// <returns> I think this should be the case: 1.127 ≤ η ≤ 1.12875 </returns>
-        public static float FillingFactor(int n, int L) => MeanDensity(n, L) * Grid.Metrics.DiskRadius;
+        public static float FillingFactor(int n, int L, float a) => MeanDensity(n, L) * a;
 
         /// <summary>
         /// Defined with φ
         /// </summary>
         /// <returns>total fraction φ of the plane covered by the objects</returns>
-        public static double TotalArea(int n, int L) => 1 - Mathf.Exp(-FillingFactor(n, L));
+        public static double TotalArea(int n, int L, float a) => 1 - Mathf.Exp(-FillingFactor(n, L, a));
 
         public static double OmegaLeft(float lambda, int k)
         {

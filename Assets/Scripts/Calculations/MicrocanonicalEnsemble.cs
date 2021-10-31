@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.IO;
 using Grid;
 
 namespace Calculations
@@ -6,44 +7,46 @@ namespace Calculations
     public class MicrocanonicalEnsemble
     {
         // private static int[] firstClusterNs;
-
-        private static GridSystem GridSetup(int numOfDisks, int L)
+        private void Load () 
         {
-            GameObject g = new GameObject();
-            g.transform.position = Vector3.zero;
+            string path = Path.Combine(Application.persistentDataPath, "test.map");
 
-            GameObject p = new GameObject();
-            p.transform.SetParent(g.transform, false);
-            p.AddComponent(typeof(GridMesh));
-
-            g.AddComponent(typeof(GridSystem));
-            GridSystem grid = g.GetComponent<GridSystem>();
-
-            grid.L = L;
-            grid.SetupGrid(numOfDisks);
-
-            return grid;
+            using (BinaryReader reader = new BinaryReader(File.OpenRead(path)))
+            {
+                
+            }
         }
 
-        public static void RunEnsemble(int n, int L)
+        /// <param name="n">Number of runs</param>
+        /// <param name="L">Plane length</param>
+        /// <param name="a">Disk radius</param>
+        public static void RunEnsemble(int n, int L, int a)
         {
-            // int[] firstClusterNs = new int[n];
-            int numOfDisks = 600;
-            for (int i = 0; i < n; i++)
+            int numOfDisks = 9900;
+            
+            string path = Path.Combine(Application.persistentDataPath, "nEtaR.dat");
+
+            using (
+                StreamWriter writer = new StreamWriter(File.Open(path, FileMode.Create)))
             {
-                GridSystem grid = GridSetup(numOfDisks++, L);
+                for (int i = 0; i < n; i++)
+                {
+                    var grid = GridSystem.GridSetup(numOfDisks++, L);
 
-                // float eta = 0f;
-                double R = Probabilities.PercolationProbabilityGCE(grid.n, grid.L,
-                                            grid.unionFind.firstClusterN);
+                    double eta;
+                    double R = Probabilities.PercolationProbabilityGCE(grid.n, grid.L,
+                        a, grid.unionFind.firstClusterN, out eta);
+                    
+                    writer.Write(grid.n);
+                    writer.Write("\t");
+                    writer.Write(eta);
+                    writer.Write("\t");
+                    writer.Write(R);
+                    writer.Write("\n");
 
-                // firstClusterNs[i] = grid.unionFind.firstClusterN;
+                    Object.Destroy(grid.gameObject);
+                }
             }
-            // int lowN = Mathf.Min(firstClusterNs);
-            // int highN = Mathf.Max(firstClusterNs);
-
-            // Probabilities.NumOfTrials = grid.n;
-            // double R = Probabilities.PercolationProbabilityGCE(, L, lowN, highN);
         }
     }
 }

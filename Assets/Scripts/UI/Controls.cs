@@ -24,11 +24,11 @@ namespace UI
                 disk.UiRect.gameObject.SetActive(a);
             }
         }
-        public void Run()
+        public void Run(int n = 10)
         {
-            if (n <= 0)
-            if (L <= 0)
-            MicrocanonicalEnsemble.RunEnsemble(n, L);
+            // if (n <= 0)
+            // if (L <= 0)
+            MicrocanonicalEnsemble.RunEnsemble(n, 512, Metrics.DiskRadius);
         }
         public void SetL(string text) => L = System.Convert.ToInt32(text);
         public void Setn(string text) => n = System.Convert.ToInt32(text);

@@ -22,10 +22,10 @@ namespace Grid
                 {
                     // randomize color
                     color = new Color(
-                    Random.value,
-                    Random.value,
-                    Random.value,
-                    1);
+                        Random.value,
+                        Random.value,
+                        Random.value,
+                        1);
                     meshRenderer.material.color = color;
                 }
                 return color;

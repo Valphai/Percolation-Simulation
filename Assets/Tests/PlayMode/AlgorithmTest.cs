@@ -11,7 +11,8 @@ namespace PlayMode
         [UnityTest]
         public IEnumerator Cluster_Length_Greater_Than_L()
         {
-            GridSystem g = Utilities.GridSetup();
+            bool passed = false;
+            GridSystem g = GridSystem.GridSetup(3000,16);
 
             Vector3Int v1;
             foreach (Disk d in UnionFind.Disks)
@@ -22,9 +23,10 @@ namespace PlayMode
                 
                 if (v1.x >= g.L || v1.y >= g.L || v1.z >= g.L)
                 {
-                    Assert.GreaterOrEqual(v1.magnitude, g.L);
+                    passed = true;
                 }
             }
+            Assert.Equals(passed, true);
 
 
             yield return null;
