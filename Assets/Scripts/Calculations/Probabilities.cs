@@ -48,9 +48,6 @@ namespace Calculations
 
             double lambda = eta * L * L / a;
             double R = Math.Exp(-lambda);
-            Debug.Log(eta);
-            Debug.Log(lambda);
-            Debug.Log(R);
 
             double sum = 0;
             for (int i = 0; i < nWhenClusterAppears; i++)
@@ -62,15 +59,15 @@ namespace Calculations
 
             return Math.Exp(-lambda) * sum;
         }
-        
+
         /// <summary>
-        /// Defined with P_L(a, n)
+        /// Defined with P_L(a, n) (CDF)
         /// </summary>
         /// <param name="n"> number of trials that stop on or BEFORE THE NTH STEP (when cluster appears) </param>
         /// <returns>probability that a wrapping cluster exists in the microcanonical ensemble BEFORE THE NTH STEP</returns>
         public static double PercolationExistsProbability(int n, int allTrials)
         {
-            return n / allTrials;
+            return n / (double)allTrials;
         }
 
     }
