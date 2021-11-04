@@ -7,18 +7,10 @@ namespace Grid
     {
         public Coordinates Coordinates;
         public RectTransform UiRect;
-        
-        public Vector3Int Position 
-        {
-            get
-            { 
-                return Vector3Int.FloorToInt(transform.localPosition); 
-            }
-        } // getter for mesh triangulation
         public List<Disk> disks { get; private set; }
         [SerializeField] public GridBin[] Neighbors { get; private set; }
     
-        private void Awake()	
+        private void Awake()
         {
             disks = new List<Disk>();
             Neighbors = new GridBin[8];
@@ -45,8 +37,7 @@ namespace Grid
                         if (diskDistance.magnitude < 2f * Metrics.DiskRadius)
                         {
                             // overlaps
-                            uf.Union(disk.DiskIndex, disk, 
-                                    bin.disks[i].DiskIndex, bin.disks[i], L);
+                            uf.Union(disk.DiskIndex, bin.disks[i].DiskIndex, L);
                         }
                     }
                 }

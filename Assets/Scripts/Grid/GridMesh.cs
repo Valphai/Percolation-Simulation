@@ -37,7 +37,7 @@ namespace Grid
     
         private void Triangulate(GridBin bin)
         {
-            Vector3 center = bin.Position;
+            Vector3 center = bin.transform.localPosition;
     
             Vector3 v1 = center + new Vector3(-Metrics.DiskRadius, 0f, Metrics.DiskRadius);
             Vector3 v2 = center + new Vector3(-Metrics.DiskRadius, 0f, -Metrics.DiskRadius);

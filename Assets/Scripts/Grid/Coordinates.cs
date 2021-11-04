@@ -19,6 +19,10 @@ namespace Grid
             
             int iX = Mathf.RoundToInt(x);
             int iZ = Mathf.RoundToInt(z);
+
+            if (iX <= 0) iX = 0;
+            if (iZ <= 0) iZ = 0; 
+
     
             return new Coordinates(iX, iZ);
         }

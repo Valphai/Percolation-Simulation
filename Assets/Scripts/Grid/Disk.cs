@@ -43,7 +43,7 @@ namespace Grid
             Color = Color.yellow;
             Position = Vector3.zero;
 
-            transform.localScale = new Vector3(Metrics.DiskRadius * 2, .01f, Metrics.DiskRadius * 2);
+            transform.localScale = new Vector3(Metrics.DiskRadius * 2, Metrics.DiskHeight, Metrics.DiskRadius * 2);
         }
     }
 }

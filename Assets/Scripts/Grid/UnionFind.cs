@@ -7,33 +7,26 @@ namespace Grid
         /// <summary>Number of disks needed to create a cluster</summary>
         public int firstClusterN;
         public static Disk[] Disks;
+        private bool visualize;
         private int[] parent;
     
         /// <summary> size of each group </summary>
         private int[] size;
-        // private Vector3Int[] displacementVectors;
 
         /// <summary> number of groups </summary>
         private int count;
     
         public bool FirstClusterOccured { get; private set; }
-        public UnionFind(int n)
+        public UnionFind(int n, bool visuals)
         {
+            visualize = visuals;
             count = n;
             parent = new int[n];
             size = new int[n];
             Disks = new Disk[n];
-            // displacementVectors = new Vector3Int[n];
-    
-            // parent nodes to themselves at the beggining
-            // for (int i = 0; i < n; i++) 
-            // {
-            //     parent[i] = i;
-            //     size[i] = 1;
-            // }
         }
 
-        public void Union(int p, Disk dP, int q, Disk dQ, int L) 
+        public void Union(int p, int q, int L) 
         {
             Vector3Int displacementP;
             Vector3Int displacementQ;
@@ -61,13 +54,16 @@ namespace Grid
                     FirstClusterOccured = true;
                     firstClusterN = p;
 
-                    // for (int i = 0; i < Disks.Length; i++)
-                    // {
-                    //     if (parent[i] == parent[p])
-                    //     {
-                    //         Disks[i].Color = Color.red;
-                    //     }
-                    // }
+                    if (visualize)
+                    {
+                        for (int i = 0; i < Disks.Length; i++)
+                        {
+                            if (parent[i] == parent[p])
+                            {
+                                Disks[i].Color = Color.red;
+                            }
+                        }
+                    }
                 }
 
                 return;
@@ -89,34 +85,36 @@ namespace Grid
         public int Find(int p, out Vector3Int v1) 
         {
             v1 = Vector3Int.zero;
-            // Validate(p);
-    
-            // int root = p;
-            // while (root != parent[root])
-            // {
-            //     root = parent[root];
-            // }
-            
-            // int root = parent[p];
-            // // path compression
-            // while (p != root) 
-            // {
-            //     int newP = parent[p];
-            //     parent[p] = root;
-            //     p = newP;
-            // }
 
-            // path splitting
-            while (p != parent[p])
-            {
-                int next = parent[p];
-                parent[p] = parent[next];
-
-                v1 += Disks[next].Coordinates.IntVectorPositon() - 
-                      Disks[p].Coordinates.IntVectorPositon();
+            #region Path_Compression    
+                // int root = p;
+                // while (root != parent[root])
+                // {
+                //     root = parent[root];
+                // }
                 
-                p = next;
-            }
+                // int root = parent[p];
+                // // path compression
+                // while (p != root) 
+                // {
+                //     int newP = parent[p];
+                //     parent[p] = root;
+                //     p = newP;
+                // }
+            #endregion
+
+            #region Path_Splitting
+                while (p != parent[p])
+                {
+                    int next = parent[p];
+                    parent[p] = parent[next];
+
+                    v1 += Disks[next].Coordinates.IntVectorPositon() - 
+                        Disks[p].Coordinates.IntVectorPositon();
+                    
+                    p = next;
+                }
+            #endregion
             return p;
         }
 

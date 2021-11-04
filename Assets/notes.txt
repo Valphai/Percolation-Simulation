@@ -27,4 +27,6 @@ sum up all to highest n => P_L(a, n) is 1
 
 for each simulation calculate ρ, then calculate η = ρa 
 
+THEN SUM THESE BOYS UP IN (3)
+
 (5) is essentially saying what critical factor η_L gives R_L = 1

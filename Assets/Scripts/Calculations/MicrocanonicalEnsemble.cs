@@ -6,7 +6,6 @@ namespace Calculations
 {
     public class MicrocanonicalEnsemble
     {
-        // private static int[] firstClusterNs;
         private void Load () 
         {
             string path = Path.Combine(Application.persistentDataPath, "test.map");
@@ -20,9 +19,9 @@ namespace Calculations
         /// <param name="n">Number of runs</param>
         /// <param name="L">Plane length</param>
         /// <param name="a">Disk radius</param>
-        public static void RunEnsemble(int n, int L, int a)
+        public static void RunEnsemble(int n, int L, float a)
         {
-            int numOfDisks = 9900;
+            int numOfDisks = 5000;
             
             string path = Path.Combine(Application.persistentDataPath, "nEtaR.dat");
 
@@ -34,7 +33,8 @@ namespace Calculations
                     var grid = GridSystem.GridSetup(numOfDisks++, L);
 
                     double eta;
-                    double R = Probabilities.PercolationProbabilityGCE(grid.n, grid.L,
+                    double R = Probabilities.PercolationProbabilityGCE(
+                        (double)grid.n, (double)grid.L,
                         a, grid.unionFind.firstClusterN, out eta);
                     
                     writer.Write(grid.n);

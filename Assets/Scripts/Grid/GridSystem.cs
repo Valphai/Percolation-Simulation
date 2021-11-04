@@ -12,6 +12,7 @@ namespace Grid
         public int n { get; private set; }
         public GridBin[] bins { get; private set; }
         public UnionFind unionFind { get; private set; }
+        private bool visualize;
         // [SerializeField] private int diskBoundLower, diskBoundHigher;
         // [SerializeField] private float diskAddingTime;
         [SerializeField] private GridMesh gridMesh;
@@ -26,10 +27,11 @@ namespace Grid
             gridCanvas = GetComponentInChildren<Canvas>();
             gridMesh = GetComponentInChildren<GridMesh>();
         }
-        // private void Start() 
-        // {
-        //     SetupGrid(3000);
-        // }
+        public void Visualize()
+        {
+            visualize = true;
+            SetupGrid(3000);
+        }
         public static GridSystem GridSetup(int numOfDisks = 600, int L = 40)
         {
             GameObject g = new GameObject();
@@ -56,11 +58,11 @@ namespace Grid
             return grid;
         }
 
-        public void AddDisk(float x, float z, int i, UnionFind unionFind)
+        private void AddDisk(float x, float z, int i, UnionFind unionFind)
         {
             Vector3 position = new Vector3(
                 x,
-                Metrics.DiskHeight,
+                Metrics.BinHeight + Metrics.DiskHeight,
                 z
             );
     
@@ -76,10 +78,13 @@ namespace Grid
             GridBin bin = GetBin(disk.Coordinates);
             bin.AddDisk(disk, unionFind, L);
     
-            SetLabel(position, disk.Coordinates, Color.blue, out disk.UiRect,
-                    Metrics.DiskFontSize, Metrics.DiskLabelHeight, Metrics.DiskRadius);
+            if (visualize)
+            {
+                SetLabel(position, disk.Coordinates, Color.blue, out disk.UiRect,
+                        Metrics.DiskFontSize, Metrics.DiskLabelHeight, Metrics.DiskRadius);
+            }
         }
-        public GridBin GetBin(Coordinates coords) 
+        private GridBin GetBin(Coordinates coords) 
         {    
     		int index = coords.x + coords.z * L;
     		return bins[index];
@@ -87,7 +92,9 @@ namespace Grid
         public void SetupGrid(int numOfDisks)
         {
             CreateBins();
-    		// gridMesh.Triangulate(bins);
+    		if (visualize)
+                gridMesh.Triangulate(bins);
+                
             PopulateGrid(numOfDisks);
     	}
         private void CreateBins()
@@ -106,20 +113,22 @@ namespace Grid
         private void PopulateGrid(int numOfDisks)
         {
             n = numOfDisks;
-            unionFind = new UnionFind(n);
+            unionFind = new UnionFind(n, visualize);
+            float a = Metrics.DiskRadius;
+            float diamater = Metrics.DiskRadius * 2;
            
             for (int i = 0; i < n; i++)
             {
                 if (unionFind.FirstClusterOccured) return;
 
-                float x = UnityEngine.Random.Range(0f, L * 2 - 1);
-                float z = UnityEngine.Random.Range(0f, L * 2 - 1);
+                float x = UnityEngine.Random.Range(-a, L * diamater - a);
+                float z = UnityEngine.Random.Range(-a, L * diamater - a);
                 AddDisk(x, z, i, unionFind);
             }
         }
         private void CreateBin(int x, int z, int i)
         {
-            int diameter = Metrics.DiskRadius * 2;
+            float diameter = Metrics.DiskRadius * 2;
             Vector3 position = new Vector3(
                 x * diameter,
                 Metrics.BinHeight,
@@ -149,13 +158,16 @@ namespace Grid
                 }
             }
     
-            SetLabel(position, bin.Coordinates, Color.white, out bin.UiRect,
-                    Metrics.BinFontSize, Metrics.BinLabelHeight, diameter);
+            if (visualize)
+            {
+                SetLabel(position, bin.Coordinates, Color.white, out bin.UiRect,
+                        Metrics.BinFontSize, Metrics.BinLabelHeight, diameter);
+            }
         }
     
         private void SetLabel(
             Vector3 position, Coordinates coords, Color c, out RectTransform r,
-            float fontSize, float height, int scale)
+            float fontSize, float height, float scale)
         {
             TextMeshProUGUI label = Instantiate<TextMeshProUGUI>(labelPrefab);
             label.rectTransform.SetParent(gridCanvas.transform, false);
