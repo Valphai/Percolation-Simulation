@@ -9,7 +9,7 @@ namespace Grid
         private List<Vector3> vertices;
         private List<int> triangles;
         private Mesh gridMesh;
-        [SerializeField] private Material material;
+        public Material material;
     
         private void Awake()	
         {

@@ -8,12 +8,12 @@ namespace Grid
         public Coordinates Coordinates;
         public RectTransform UiRect;
         public List<Disk> disks { get; private set; }
-        [SerializeField] public GridBin[] Neighbors { get; private set; }
+        private GridBin[] neighbors;
     
         private void Awake()
         {
             disks = new List<Disk>();
-            Neighbors = new GridBin[8];
+            neighbors = new GridBin[8];
         }
         public void AddDisk(Disk disk, UnionFind uf, int L)
         {
@@ -23,7 +23,7 @@ namespace Grid
             Vector3 v1 = disk.Position;
 
             // go through all neigbors
-            foreach (GridBin bin in Neighbors)
+            foreach (GridBin bin in neighbors)
             {
                 if (bin)
                 {
@@ -49,12 +49,12 @@ namespace Grid
     
         public GridBin GetNeighbor(Direction direction) 
         {
-    		return Neighbors[(int)direction];
+    		return neighbors[(int)direction];
     	}
         public void SetNeighbor(Direction direction, GridBin bin) 
         {
-    		Neighbors[(int)direction] = bin;
-    		bin.Neighbors[(int)direction.Opposite()] = this;
+    		neighbors[(int)direction] = bin;
+    		bin.neighbors[(int)direction.Opposite()] = this;
     	}
     }
 }

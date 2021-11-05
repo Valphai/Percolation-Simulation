@@ -6,7 +6,7 @@ namespace Grid
     {
         /// <summary>Number of disks needed to create a cluster</summary>
         public int firstClusterN;
-        public static Disk[] Disks;
+        public Disk[] Disks { get; private set; }
         private bool visualize;
         private int[] parent;
     

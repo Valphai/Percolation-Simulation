@@ -12,10 +12,10 @@ namespace PlayMode
         public IEnumerator Cluster_Length_Greater_Than_L()
         {
             bool passed = false;
-            GridSystem g = GridSystem.GridSetup(3000,16);
+            GridSystem g = GridSystem.GridSetup(3000,16, false);
 
             Vector3Int v1;
-            foreach (Disk d in UnionFind.Disks)
+            foreach (Disk d in g.unionFind.Disks)
             {
                 if (d == null) break;
 

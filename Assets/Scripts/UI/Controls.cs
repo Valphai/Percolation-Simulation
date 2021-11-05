@@ -8,25 +8,36 @@ namespace UI
     {
         private int L = 0;
         private int n = 0;
-        [SerializeField] private GridSystem gridSystem;
 
         public void DeactivateBins(bool a)
         {
-            foreach (GridBin bin in gridSystem.bins)
+            var g = GameObject.FindWithTag("Grid").GetComponent<GridSystem>();
+            if (g != null)
             {
-                bin.UiRect.gameObject.SetActive(a);
+                foreach (GridBin bin in g.bins)
+                {
+                    bin.UiRect.gameObject.SetActive(a);
+                }
             }
         }
         public void DeactivateDisks(bool a)
         {
-            foreach (Disk disk in UnionFind.Disks)
+            var g = GameObject.FindWithTag("Grid").GetComponent<GridSystem>();
+            if (g != null)
             {
-                disk.UiRect.gameObject.SetActive(a);
+                foreach (Disk disk in g.unionFind.Disks)
+                {
+                    disk.UiRect.gameObject.SetActive(a);
+                }
             }
         }
         public void Run(int n = 10)
         {
             MicrocanonicalEnsemble.RunEnsemble(n, 32, Metrics.DiskRadius);
+        }
+        public void Visualize()
+        {
+            var g = GridSystem.GridSetup(3000, visualize:true);
         }
         public void SetL(string text) => L = System.Convert.ToInt32(text);
         public void Setn(string text) => n = System.Convert.ToInt32(text);
