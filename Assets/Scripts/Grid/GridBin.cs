@@ -7,37 +7,41 @@ namespace Grid
     {
         public Coordinates Coordinates;
         public RectTransform UiRect;
-        public List<Disk> disks { get; private set; }
+        public List<Disk> Disks { get; private set; }
         private GridBin[] neighbors;
     
         private void Awake()
         {
-            disks = new List<Disk>();
+            Disks = new List<Disk>();
             neighbors = new GridBin[8];
         }
         public void AddDisk(Disk disk, UnionFind uf, int L)
         {
-            disks.Add(disk);
-
             // check for intersecting disks
-            Vector3 v1 = disk.Position;
+            for (int i = 0; i < Disks.Count; i++)
+            {
+                uf.Union(disk.DiskIndex, Disks[i].DiskIndex, L);
+            }
 
+            Disks.Add(disk);
+
+            Vector3 v1 = disk.Position;
             // go through all neigbors
             foreach (GridBin bin in neighbors)
             {
                 if (bin)
                 {
-                    for (int i = 0; i < bin.disks.Count; i++)
+                    for (int i = 0; i < bin.Disks.Count; i++)
                     {
                         if (uf.FirstClusterOccured) return;
 
-                        Vector3 v2 = bin.disks[i].Position;
+                        Vector3 v2 = bin.Disks[i].Position;
                         Vector3 diskDistance = v2 - v1;
     
-                        if (diskDistance.magnitude < 2f * Metrics.DiskRadius)
+                        if (diskDistance.magnitude < 2 * Metrics.DiskRadius)
                         {
                             // overlaps
-                            uf.Union(disk.DiskIndex, bin.disks[i].DiskIndex, L);
+                            uf.Union(disk.DiskIndex, bin.Disks[i].DiskIndex, L);
                         }
                     }
                 }
@@ -56,6 +60,7 @@ namespace Grid
     		neighbors[(int)direction] = bin;
     		bin.neighbors[(int)direction.Opposite()] = this;
     	}
+        public void CleanDisks() => Disks.Clear();
     }
 }
 

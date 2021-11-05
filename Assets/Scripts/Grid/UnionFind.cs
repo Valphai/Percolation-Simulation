@@ -39,12 +39,12 @@ namespace Grid
             if (rootP == rootQ) 
             {
                 // if displacement vec differ by +- L => 
-                displacementP = new Vector3Int(System.Math.Abs(displacementP.x),
-                                                System.Math.Abs(displacementP.y),
-                                                System.Math.Abs(displacementP.z));
-                displacementQ = new Vector3Int(System.Math.Abs(displacementQ.x),
-                                                System.Math.Abs(displacementQ.y),
-                                                System.Math.Abs(displacementQ.z));
+                // displacementP = new Vector3Int(System.Math.Abs(displacementP.x),
+                //                                 System.Math.Abs(displacementP.y),
+                //                                 System.Math.Abs(displacementP.z));
+                // displacementQ = new Vector3Int(System.Math.Abs(displacementQ.x),
+                //                                 System.Math.Abs(displacementQ.y),
+                //                                 System.Math.Abs(displacementQ.z));
                 if (displacementP.x + displacementQ.x >= L || 
                     displacementP.y + displacementQ.y >= L || 
                     displacementP.z + displacementQ.z >= L)
@@ -56,9 +56,9 @@ namespace Grid
 
                     if (visualize)
                     {
-                        for (int i = 0; i < Disks.Length; i++)
+                        for (int i = 0; i < firstClusterN; i++)
                         {
-                            if (parent[i] == parent[p])
+                            if (Find(i) == parent[p])
                             {
                                 Disks[i].Color = Color.red;
                             }
@@ -108,13 +108,24 @@ namespace Grid
                 {
                     int next = parent[p];
                     parent[p] = parent[next];
-
+                    
                     v1 += Disks[next].Coordinates.IntVectorPositon() - 
                         Disks[p].Coordinates.IntVectorPositon();
                     
                     p = next;
                 }
             #endregion
+            return p;
+        }
+        public int Find(int p)
+        {
+            while (p != parent[p])
+            {
+                int next = parent[p];
+                parent[p] = parent[next];
+                
+                p = next;
+            }
             return p;
         }
 

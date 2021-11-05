@@ -40,7 +40,6 @@ namespace Grid
         private void Awake()	
         {
             meshRenderer = GetComponent<MeshRenderer>();
-            Color = Color.yellow;
             Position = Vector3.zero;
 
             transform.localScale = new Vector3(Metrics.DiskRadius * 2, Metrics.DiskHeight, Metrics.DiskRadius * 2);

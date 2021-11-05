@@ -1,6 +1,8 @@
+using System;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Pool;
 
 
 namespace Grid
@@ -12,115 +14,89 @@ namespace Grid
         public int n { get; private set; }
         public GridBin[] bins { get; private set; }
         public UnionFind unionFind { get; private set; }
-        private int minNRange, maxNRange;
         private bool visualize;
         private GridBin binPrefab;
-        private Disk diskPrefab;
         private TextMeshProUGUI labelPrefab;
         private GridMesh gridMesh;
         private Canvas gridCanvas;
-        // private ObjectPool<Disk> pool;
+        private ObjectPool<Disk> disksPool;
 
         private void Awake()
         {
             gridCanvas = GetComponentInChildren<Canvas>();
             gridMesh = GetComponentInChildren<GridMesh>();
+
+            binPrefab = AssetDatabase.LoadAssetAtPath<GridBin>("Assets/Prefabs/Grid/Bin.prefab");
+            labelPrefab = AssetDatabase.LoadAssetAtPath<TextMeshProUGUI>("Assets/Prefabs/Grid/Label.prefab");
         }
-        public void SetupGrid()
+        public void SetupGrid(int nMin, int nMax)
         {
-            CreateBins();
-    		if (visualize)
+    		n = UnityEngine.Random.Range(nMin, nMax);
+            if (visualize)
                 gridMesh.Triangulate(bins);
-                
+
             PopulateGrid();
     	}
-        public static GridSystem GridSetup(int numOfDisks = 600, int L = 40, bool visualize = false)
-        {
-            var g = AssignGrid(L, visualize);
-           
-            g.n = numOfDisks;
 
-            g.SetupGrid();
+        public void SetupGrid(object spawnLower, int v)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>Method for running tests</summary>
+        public static GridSystem GridSetup(
+            ObjectPool<Disk> disksPool, int nMin, int nMax, 
+            int L = 40)
+        {
+            var g = AssignGrid(disksPool, L);
+
+            g.CreateBins();
+            g.SetupGrid(nMin, nMax);
             
             return g;
         }
-        public static GridSystem GridSetup(int nMin, int nMax, int L = 40, bool visualize = false)
+        /// <summary>Microcanonical setup method</summary>
+        public static GridSystem GridSetup(
+            ref GridSystem g, ObjectPool<Disk> disksPool,
+            int L = 40, bool visualize = false)
         {
-            var g = AssignGrid(L, visualize);
+            g.disksPool = disksPool;
+            g.L = L;
+            g.visualize = visualize;
+            g.CreateBins();
 
-            g.n = UnityEngine.Random.Range(nMin, nMax);
-
-            g.SetupGrid();
-            
             return g;
         }
-        private static GridSystem AssignGrid(int L, bool visualize)
+        private static GridSystem AssignGrid(
+            ObjectPool<Disk> disksPool, int L)
         {
             GameObject g = new GameObject();
             g.transform.position = Vector3.zero;
 
-            if (visualize)
-            {
-                GameObject p = new GameObject();
-                p.transform.SetParent(g.transform, false);
-                p.AddComponent(typeof(GridMesh));
-    
-                GameObject c = new GameObject();
-                c.transform.SetParent(g.transform, false);
-                c.AddComponent(typeof(Canvas));
-            }
-
             g.AddComponent(typeof(GridSystem));
             GridSystem grid = g.GetComponent<GridSystem>();
 
+            grid.disksPool = disksPool;
             grid.L = L;
-            grid.visualize = visualize;
-
-            grid.binPrefab = AssetDatabase.LoadAssetAtPath<GridBin>("Assets/Prefabs/Grid/Bin.prefab");
-            grid.diskPrefab = AssetDatabase.LoadAssetAtPath<Disk>("Assets/Prefabs/Grid/Disk.prefab");
-            grid.labelPrefab = AssetDatabase.LoadAssetAtPath<TextMeshProUGUI>("Assets/Prefabs/Grid/Label.prefab");
 
             return grid;
         }
-        private void OnDestroy()
+        public void ReleasePools()
         {
-            Resources.UnloadUnusedAssets();
-            Destroy(gameObject);
-        }
-
-        private void AddDisk(float x, float z, int i, UnionFind unionFind)
-        {
-            Vector3 position = new Vector3(
-                x,
-                Metrics.BinHeight + Metrics.DiskHeight,
-                z
-            );
-    
-            Disk disk = Instantiate<Disk>(diskPrefab);
-            // var disk = pool.Get();
-
-            unionFind.TickDisk(disk, i);
-            
-            disk.Position = position;
-            disk.transform.SetParent(transform, true);
-
-            disk.Coordinates = Coordinates.FromVectorCoords(position);
-    
-            // find bin its on
-            GridBin bin = GetBin(disk.Coordinates);
-            bin.AddDisk(disk, unionFind, L);
-    
-            if (visualize)
+            for (int i = 0; i < unionFind.firstClusterN; i++)
             {
-                SetLabel(position, disk.Coordinates, Color.blue, out disk.UiRect,
-                        Metrics.DiskFontSize, Metrics.DiskLabelHeight, Metrics.DiskRadius);
+                disksPool.Release(unionFind.Disks[i]);
+            }
+            unionFind = null;
+            Resources.UnloadUnusedAssets();
+        }
+        public void CleanBins()
+        {
+            foreach (GridBin bin in bins)
+            {
+                bin.CleanDisks();
             }
         }
-        private GridBin GetBin(Coordinates coords) 
-        {    
-    		int index = coords.x + coords.z * L;
-    		return bins[index];
-    	}
         private void CreateBins()
         {
             bins = new GridBin[L * L];
@@ -133,11 +109,42 @@ namespace Grid
                 }
             }
         }
+        private void AddDisk(float x, float z, int i, UnionFind unionFind)
+        {
+            Vector3 position = new Vector3(
+                x,
+                Metrics.BinHeight + Metrics.DiskHeight,
+                z
+            );
+    
+            Disk disk = disksPool.Get();
+            unionFind.TickDisk(disk, i);
+            
+            disk.Position = position;
+            disk.transform.SetParent(transform, true);
+
+            disk.Coordinates = Coordinates.FromVectorCoords(position);
+    
+            // find bin its on
+            GridBin bin = GetBin(disk.Coordinates);
+            bin.AddDisk(disk, unionFind, L);
+    
+            // if (visualize)
+            // {
+            //     SetLabel(position, disk.Coordinates, Color.blue, out disk.UiRect,
+            //             Metrics.DiskFontSize, Metrics.DiskLabelHeight, Metrics.DiskRadius);
+            // }
+        }
+        private GridBin GetBin(Coordinates coords) 
+        {    
+    		int index = coords.x + coords.z * L;
+    		return bins[index];
+    	}
         private void PopulateGrid()
         {
             unionFind = new UnionFind(n, visualize);
             float a = Metrics.DiskRadius;
-            float diamater = Metrics.DiskRadius * 2;
+            float diamater = a * 2;
            
             for (int i = 0; i < n; i++)
             {
@@ -158,9 +165,8 @@ namespace Grid
             );
     
             GridBin bin = bins[i] = Instantiate<GridBin>(binPrefab);
-            bin.transform.SetParent(gridMesh.transform, false);
+            bin.transform.SetParent(transform, false);
             bin.transform.localPosition = position;
-    
             bin.Coordinates = Coordinates.FromIntCoords(x, z);
     
             if (x > 0)
@@ -180,11 +186,11 @@ namespace Grid
                 }
             }
     
-            if (visualize)
-            {
-                SetLabel(position, bin.Coordinates, Color.white, out bin.UiRect,
-                        Metrics.BinFontSize, Metrics.BinLabelHeight, diameter);
-            }
+            // if (visualize)
+            // {
+            //     SetLabel(position, bin.Coordinates, Color.white, out bin.UiRect,
+            //             Metrics.BinFontSize, Metrics.BinLabelHeight, diameter);
+            // }
         }
     
         private void SetLabel(
