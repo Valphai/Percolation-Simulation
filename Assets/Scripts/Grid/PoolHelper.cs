@@ -15,6 +15,10 @@ namespace Grid
         }
         public Disk CreateDisk() => Instantiate<Disk>(diskPrefab);
         public void TakeFromPool(Disk d) => d.gameObject.SetActive(true); // reset it maybe
-        public void ReleaseFromPool(Disk d) => d.gameObject.SetActive(false);
+        public void ReleaseFromPool(Disk d)
+        {
+            d.Color = Color.yellow;
+            d.gameObject.SetActive(false);
+        }
     }
 }

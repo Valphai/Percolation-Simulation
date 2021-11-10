@@ -39,12 +39,6 @@ namespace Grid
             if (rootP == rootQ) 
             {
                 // if displacement vec differ by +- L => 
-                // displacementP = new Vector3Int(System.Math.Abs(displacementP.x),
-                //                                 System.Math.Abs(displacementP.y),
-                //                                 System.Math.Abs(displacementP.z));
-                // displacementQ = new Vector3Int(System.Math.Abs(displacementQ.x),
-                //                                 System.Math.Abs(displacementQ.y),
-                //                                 System.Math.Abs(displacementQ.z));
                 if (displacementP.x + displacementQ.x >= L || 
                     displacementP.y + displacementQ.y >= L || 
                     displacementP.z + displacementQ.z >= L)
@@ -56,9 +50,10 @@ namespace Grid
 
                     if (visualize)
                     {
+                        int biggestRoot = Find(p);
                         for (int i = 0; i < firstClusterN; i++)
                         {
-                            if (Find(i) == parent[p])
+                            if (Find(i) == biggestRoot)
                             {
                                 Disks[i].Color = Color.red;
                             }

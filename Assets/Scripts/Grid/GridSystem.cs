@@ -83,9 +83,12 @@ namespace Grid
         }
         public void ReleasePools()
         {
-            for (int i = 0; i < unionFind.firstClusterN; i++)
+            for (int i = 0; i < unionFind.Disks.Length; i++)
             {
-                disksPool.Release(unionFind.Disks[i]);
+                if (unionFind.Disks[i])
+                {
+                    disksPool.Release(unionFind.Disks[i]);
+                }
             }
             unionFind = null;
             Resources.UnloadUnusedAssets();
