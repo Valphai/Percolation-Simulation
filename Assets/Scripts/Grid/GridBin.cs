@@ -24,25 +24,23 @@ namespace Grid
             }
 
             Disks.Add(disk);
-
             Vector3 v1 = disk.Position;
+
             // go through all neigbors
             foreach (GridBin bin in neighbors)
             {
-                if (bin)
+                for (int i = 0; i < bin.Disks.Count; i++)
                 {
-                    for (int i = 0; i < bin.Disks.Count; i++)
-                    {
-                        if (uf.FirstClusterOccured) return;
+                    if (uf.FirstClusterOccured) return;
 
-                        Vector3 v2 = bin.Disks[i].Position;
-                        Vector3 diskDistance = v2 - v1;
-    
-                        if (diskDistance.magnitude < 2 * Metrics.DiskRadius)
-                        {
-                            // overlaps
-                            uf.Union(disk.DiskIndex, bin.Disks[i].DiskIndex, L);
-                        }
+                    Vector3 v2 = bin.Disks[i].Position;
+
+                    Vector3 diskDistance = v2 - v1;
+
+                    if (diskDistance.magnitude < 2 * Metrics.DiskRadius)
+                    {
+                        // overlaps
+                        uf.Union(disk.DiskIndex, bin.Disks[i].DiskIndex, L);
                     }
                 }
             }

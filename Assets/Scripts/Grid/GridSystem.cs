@@ -112,7 +112,7 @@ namespace Grid
                 }
             }
         }
-        private void AddDisk(float x, float z, int i, UnionFind unionFind)
+        private void AddDisk(float x, float z, int i, UnionFind uF)
         {
             Vector3 position = new Vector3(
                 x,
@@ -121,16 +121,16 @@ namespace Grid
             );
     
             Disk disk = disksPool.Get();
-            unionFind.TickDisk(disk, i);
+            uF.TickDisk(disk, i);
             
             disk.Position = position;
             disk.transform.SetParent(transform, true);
 
             disk.Coordinates = Coordinates.FromVectorCoords(position);
     
-            // find bin its on
+            // find the bin its on
             GridBin bin = GetBin(disk.Coordinates);
-            bin.AddDisk(disk, unionFind, L);
+            bin.AddDisk(disk, uF, L);
     
             // if (visualize)
             // {
@@ -171,7 +171,7 @@ namespace Grid
             bin.transform.SetParent(transform, false);
             bin.transform.localPosition = position;
             bin.Coordinates = Coordinates.FromIntCoords(x, z);
-    
+            
             if (x > 0)
             {
                 bin.SetNeighbor(Direction.W, bins[i - 1]);
@@ -179,16 +179,48 @@ namespace Grid
             if (z > 0)
             {
                 bin.SetNeighbor(Direction.S, bins[i - L]);
+                
                 if (x > 0)
                 {
                     bin.SetNeighbor(Direction.SW, bins[i - L - 1]);
+                }
+                else // left
+                {
+                    bin.SetNeighbor(Direction.SW, bins[i - 1]);
                 }
                 if (x < L - 1)
                 {
                     bin.SetNeighbor(Direction.SE, bins[i - L + 1]);
                 }
             }
-    
+            if (x == L - 1) // right
+            {
+                bin.SetNeighbor(Direction.E, bins[i - L + 1]);
+                if (z > 0)
+                {
+                    bin.SetNeighbor(Direction.SE, bins[i - (2 * L) + 1]);
+                }
+            }
+            if (z == L - 1) // upper
+            {
+                bin.SetNeighbor(Direction.N, bins[i - (L - 1) * L]);
+                if (x == 0)
+                {
+                    bin.SetNeighbor(Direction.NE, bins[i + 1 - (L - 1) * L]);
+                    bin.SetNeighbor(Direction.NW, bins[L - 1]);
+                }
+                else if (x == L - 1)
+                {
+                    bin.SetNeighbor(Direction.NE, bins[0]);
+                    bin.SetNeighbor(Direction.NW, bins[i - 1 - (L - 1) * L]);
+                }
+                else
+                {
+                    bin.SetNeighbor(Direction.NE, bins[i + 1 - (L - 1) * L]);
+                    bin.SetNeighbor(Direction.NW, bins[i - 1 - (L - 1) * L]);
+                }
+            }
+
             // if (visualize)
             // {
             //     SetLabel(position, bin.Coordinates, Color.white, out bin.UiRect,

@@ -30,3 +30,6 @@ for each simulation calculate ρ, then calculate η = ρa
 THEN SUM THESE BOYS UP IN (3)
 
 (5) is essentially saying what critical factor η_L gives R_L = 1
+
+Problem now is no periodic boundaries, when summing path 
+cut part of the disk at the edge should be on the opposite side of the plane
