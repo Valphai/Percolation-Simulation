@@ -11,5 +11,6 @@ namespace Grid
         public const float DiskFontSize = .7f;
         public const int SpawnLower = 8443;
         public const int SpawnHigher = 14871;
+        public const float MaxDist = 0.70710678118f; // 1/Mathf.Sqrt(2f);
     }
 }

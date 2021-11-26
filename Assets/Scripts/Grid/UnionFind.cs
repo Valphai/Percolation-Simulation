@@ -32,26 +32,27 @@ namespace Grid
             Vector3Int displacementQ;
 
             // here we sum displacement vectors
-            int rootP = Find(p, out displacementP);
-            int rootQ = Find(q, out displacementQ);
+            int rootP = Find(p, out displacementP, L);
+            int rootQ = Find(q, out displacementQ, L);
     
             // in the same group
             if (rootP == rootQ) 
             {
-                // if displacement vec differ by +- L => 
-                if (displacementP.x + displacementQ.x >= L || 
-                    displacementP.y + displacementQ.y >= L || 
-                    displacementP.z + displacementQ.z >= L)
+                
+                if (displacementP.x - displacementQ.x >= 2 * (L - 1) ||
+                    displacementP.z - displacementQ.z >= 2 * (L - 1))
                 {
+                    // if displacement vec differ by +- L => 
                     // cluster has a nontrivial winding number around one or
                     // both directions on the torus.
+
                     FirstClusterOccured = true;
                     firstClusterN = p;
 
                     if (visualize)
                     {
                         int biggestRoot = Find(p);
-                        for (int i = 0; i < firstClusterN; i++)
+                        for (int i = 0; i <= firstClusterN; i++)
                         {
                             if (Find(i) == biggestRoot)
                             {
@@ -77,7 +78,7 @@ namespace Grid
             }
             count--;
         }
-        public int Find(int p, out Vector3Int v1) 
+        public int Find(int p, out Vector3Int v1, int L) 
         {
             v1 = Vector3Int.zero;
 
@@ -104,9 +105,33 @@ namespace Grid
                     int next = parent[p];
                     parent[p] = parent[next];
                     
-                    v1 += Disks[next].Coordinates.IntVectorPositon() - 
-                        Disks[p].Coordinates.IntVectorPositon();
-                    
+                    var distance = Disks[next].Coordinates.IntVectorPositon() - 
+                            Disks[p].Coordinates.IntVectorPositon();
+
+                    if (distance.magnitude < (float)L/3)
+                    {
+                        v1 += distance;
+                    }
+                    else
+                    {
+                        if (distance.x > (float)L/3)
+                        {
+                            v1 += distance - Vector3Int.right * L;
+                        }
+                        else if (distance.x > -(float)L/3)
+                        {
+                            v1 += distance + Vector3Int.right * L;
+                        }
+                        if (distance.z > (float)L/3)
+                        {
+                            v1 += distance - Vector3Int.right * L;
+                        }
+                        else if (distance.z > -(float)L/3)
+                        {
+                            v1 += distance + Vector3Int.forward * L;
+                        }
+                    }
+
                     p = next;
                 }
             #endregion
