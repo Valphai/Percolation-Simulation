@@ -39,8 +39,8 @@ namespace Grid
             if (rootP == rootQ) 
             {
                 
-                if (displacementP.x - displacementQ.x >= 2 * (L - 1) ||
-                    displacementP.z - displacementQ.z >= 2 * (L - 1))
+                if (displacementP.x - displacementQ.x > L - 1 ||
+                    displacementP.z - displacementQ.z > L - 1)
                 {
                     // if displacement vec differ by +- L => 
                     // cluster has a nontrivial winding number around one or
@@ -108,27 +108,27 @@ namespace Grid
                     var distance = Disks[next].Coordinates.IntVectorPositon() - 
                             Disks[p].Coordinates.IntVectorPositon();
 
-                    if (distance.magnitude < (float)L/3)
+                    if (distance.magnitude <= Mathf.Sqrt(2))
                     {
                         v1 += distance;
                     }
                     else
                     {
-                        if (distance.x > (float)L/3)
+                        if (distance.x > 1)
                         {
-                            v1 += distance - Vector3Int.right * L;
+                            v1 += distance - Vector3Int.right * (L - 1);
                         }
-                        else if (distance.x > -(float)L/3)
+                        else if (distance.x < -1)
                         {
-                            v1 += distance + Vector3Int.right * L;
+                            v1 += distance + Vector3Int.right * (L - 1);
                         }
-                        if (distance.z > (float)L/3)
+                        if (distance.z > 1)
                         {
-                            v1 += distance - Vector3Int.right * L;
+                            v1 += distance - Vector3Int.forward * (L - 1);
                         }
-                        else if (distance.z > -(float)L/3)
+                        else if (distance.z < -1)
                         {
-                            v1 += distance + Vector3Int.forward * L;
+                            v1 += distance + Vector3Int.forward * (L - 1);
                         }
                     }
 

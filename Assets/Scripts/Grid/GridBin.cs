@@ -17,7 +17,7 @@ namespace Grid
         }
         public void AddDisk(Disk disk, UnionFind uf, int L)
         {
-            float planeLength = Metrics.DiskRadius * (2 * L - 1);
+            float planeLength = Metrics.DiskRadius * 2 * L;
 
             // check for intersecting disks
             for (int i = 0; i < Disks.Count; i++)
@@ -33,7 +33,7 @@ namespace Grid
             foreach (GridBin neighBin in neighbors)
             {
                 Vector3Int neighBinPos = neighBin.Coordinates.IntVectorPositon();
-                bool binsFarApart = System.Math.Abs(thisBinPos.x - neighBinPos.x) > 1;
+                bool binsFarApart = Vector3Int.Distance(thisBinPos, neighBinPos) > Mathf.Sqrt(2);
 
                 for (int i = 0; i < neighBin.Disks.Count; i++)
                 {
@@ -41,19 +41,19 @@ namespace Grid
 
                     if (binsFarApart)
                     {
-                        if ((thisBinPos + Vector3Int.right).x >= L)
+                        if ((thisBinPos + Vector3Int.right).x > L - 1)
                         {
                             v2 += Vector3.right * planeLength;
                         }
-                        else if ((thisBinPos - Vector3Int.right).x <= 0)
+                        else if ((thisBinPos - Vector3Int.right).x < 0)
                         {
                             v2 -= Vector3.right * planeLength;
                         }
-                        if ((thisBinPos + Vector3Int.forward).z >= L)
+                        if ((thisBinPos + Vector3Int.forward).z > L - 1)
                         {
                             v2 += Vector3.forward * planeLength;
                         }
-                        else if ((thisBinPos - Vector3Int.forward).z <= 0)
+                        else if ((thisBinPos - Vector3Int.forward).z < 0)
                         {
                             v2 -= Vector3.forward * planeLength;
                         }
