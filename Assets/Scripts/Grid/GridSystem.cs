@@ -36,13 +36,8 @@ namespace Grid
             if (visualize)
                 gridMesh.Triangulate(bins);
 
-            StartCoroutine(PopulateGrid());
+            PopulateGrid();
     	}
-
-        public void SetupGrid(object spawnLower, int v)
-        {
-            throw new NotImplementedException();
-        }
 
         /// <summary>Method for running tests</summary>
         public static GridSystem GridSetup(
@@ -123,6 +118,8 @@ namespace Grid
     
             Disk disk = disksPool.Get();
             uF.TickDisk(disk, i);
+
+            uF.Distances.Clear();
             
             disk.Position = position;
             disk.transform.SetParent(transform, true);
@@ -144,7 +141,7 @@ namespace Grid
     		int index = coords.x + coords.z * L;
     		return bins[index];
     	}
-        private IEnumerator PopulateGrid()
+        private void PopulateGrid()
         {
             unionFind = new UnionFind(n, visualize);
             float a = Metrics.DiskRadius;
@@ -152,12 +149,11 @@ namespace Grid
            
             for (int i = 0; i < n; i++)
             {
-                if (unionFind.FirstClusterOccured) yield return null;
+                if (unionFind.FirstClusterOccured) return;
 
                 float x = UnityEngine.Random.Range(-a, L * diamater - a);
                 float z = UnityEngine.Random.Range(-a, L * diamater - a);
                 AddDisk(x, z, i, unionFind);
-                yield return new WaitForSeconds(.01f);
             }
         }
         private void CreateBin(int x, int z, int i)

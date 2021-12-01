@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Grid
@@ -7,6 +8,8 @@ namespace Grid
         /// <summary>Number of disks needed to create a cluster</summary>
         public int firstClusterN;
         public Disk[] Disks { get; private set; }
+        public bool FirstClusterOccured { get; private set; }
+        public List<List<Vector3>> Distances { get; private set; }
         private bool visualize;
         private int[] parent;
     
@@ -16,9 +19,10 @@ namespace Grid
         /// <summary> number of groups </summary>
         private int count;
     
-        public bool FirstClusterOccured { get; private set; }
         public UnionFind(int n, bool visuals)
         {
+            Distances = new List<List<Vector3>>();
+
             visualize = visuals;
             count = n;
             parent = new int[n];
@@ -52,13 +56,16 @@ namespace Grid
                     if (visualize)
                     {
                         int biggestRoot = Find(p);
-                        for (int i = 0; i <= firstClusterN; i++)
+                        for (int i = 0; i < firstClusterN; i++)
                         {
                             if (Find(i) == biggestRoot)
                             {
                                 Disks[i].Color = Color.red;
                             }
                         }
+                        Disks[p].Color = Color.black;
+                        Disks[q].Color = Color.green;
+                        Disks[biggestRoot].Color = Color.magenta;
                     }
                 }
 
@@ -100,6 +107,7 @@ namespace Grid
             #endregion
 
             #region Path_Splitting
+                var debugDistance = new List<Vector3>();
                 while (p != parent[p])
                 {
                     int next = parent[p];
@@ -131,6 +139,11 @@ namespace Grid
                             v1 += distance + Vector3Int.forward * (L - 1);
                         }
                     }
+
+                    debugDistance.Add(Disks[next].Position);
+                    debugDistance.Add(Disks[p].Position);
+                    debugDistance.Add(v1);
+                    Distances.Add(debugDistance);
 
                     p = next;
                 }
