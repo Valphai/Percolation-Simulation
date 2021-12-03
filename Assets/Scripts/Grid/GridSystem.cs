@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -118,8 +116,6 @@ namespace Grid
     
             Disk disk = disksPool.Get();
             uF.TickDisk(disk, i);
-
-            uF.Distances.Clear();
             
             disk.Position = position;
             disk.transform.SetParent(transform, true);

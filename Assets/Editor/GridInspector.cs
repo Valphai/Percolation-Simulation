@@ -18,15 +18,21 @@ public class GridInspector : Editor
     }
     private void OnSceneGUI()	
     {
-            Handles.color = Color.blue;
-        for (int i = 0; i < uf.Distances.Count; i++)
+        Handles.color = Color.blue;
+        if (uf != null)
         {
-            var v2 = uf.Distances[i][0];
-            var v3 = uf.Distances[i][1];
-            var v1 = uf.Distances[i][2];
-
-            Handles.DrawLine(v2, v3, 2f);
-            Handles.Label((v3 + v2) / 2, v1.ToString());
+            for (int i = 0; i < uf.Distances.Count; i++)
+            {
+                for (int j = 0; j < uf.Distances[i].Count - 2; j++)
+                {
+                    var v2 = uf.Distances[i][j];
+                    var v3 = uf.Distances[i][j + 1];
+                    var v1 = uf.Distances[i][j + 2];
+        
+                    Handles.DrawLine(v2, v3, 2f);
+                    Handles.Label((v3 + v2) / 2, v1.ToString());
+                }
+            }
         }
     }
 }

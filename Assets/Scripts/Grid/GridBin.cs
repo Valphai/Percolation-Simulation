@@ -63,6 +63,7 @@ namespace Grid
 
                     if (diskDistance.magnitude < 2 * Metrics.DiskRadius)
                     {
+                        uf.Distances.Clear();
                         // overlaps
                         uf.Union(disk.DiskIndex, neighBin.Disks[i].DiskIndex, L);
                     }

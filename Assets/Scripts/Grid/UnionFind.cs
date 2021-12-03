@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 
 namespace Grid
@@ -43,30 +44,42 @@ namespace Grid
             if (rootP == rootQ) 
             {
                 
-                if (displacementP.x - displacementQ.x > L - 1 ||
-                    displacementP.z - displacementQ.z > L - 1)
+                if (System.Math.Abs(displacementP.x - displacementQ.x) == L - 1 ||
+                    System.Math.Abs(displacementP.z - displacementQ.z) == L - 1)
                 {
                     // if displacement vec differ by +- L => 
                     // cluster has a nontrivial winding number around one or
                     // both directions on the torus.
-
-                    FirstClusterOccured = true;
-                    firstClusterN = p;
-
-                    if (visualize)
-                    {
-                        int biggestRoot = Find(p);
-                        for (int i = 0; i < firstClusterN; i++)
+                    // if (System.Math.Abs(displacementP.x) == System.Math.Abs(displacementQ.x) ||
+                    //     System.Math.Abs(displacementP.z) == System.Math.Abs(displacementQ.z))
+                    // {
+                        #region Debug
+                            var assembly = Assembly.GetAssembly(typeof(UnityEditor.Editor));
+                            var type = assembly.GetType("UnityEditor.LogEntries");
+                            var method = type.GetMethod("Clear");
+                            method.Invoke(new object(), null);
+                            Debug.Log(displacementP);
+                            Debug.Log(displacementQ);
+                        #endregion
+    
+                        FirstClusterOccured = true;
+                        firstClusterN = p;
+    
+                        if (visualize)
                         {
-                            if (Find(i) == biggestRoot)
+                            int biggestRoot = Find(p);
+                            for (int i = 0; i < firstClusterN; i++)
                             {
-                                Disks[i].Color = Color.red;
+                                if (Find(i) == biggestRoot)
+                                {
+                                    Disks[i].Color = Color.red;
+                                }
                             }
+                            Disks[p].Color = Color.black;
+                            Disks[q].Color = Color.green;
+                            Disks[biggestRoot].Color = Color.cyan;
                         }
-                        Disks[p].Color = Color.black;
-                        Disks[q].Color = Color.green;
-                        Disks[biggestRoot].Color = Color.magenta;
-                    }
+                    // }
                 }
 
                 return;
@@ -88,67 +101,68 @@ namespace Grid
         public int Find(int p, out Vector3Int v1, int L) 
         {
             v1 = Vector3Int.zero;
+            // var a = Vector3Int.zero;
 
             #region Path_Compression    
-                // int root = p;
-                // while (root != parent[root])
-                // {
-                //     root = parent[root];
-                // }
-                
-                // int root = parent[p];
-                // // path compression
-                // while (p != root) 
-                // {
-                //     int newP = parent[p];
-                //     parent[p] = root;
-                //     p = newP;
-                // }
-            #endregion
-
-            #region Path_Splitting
                 var debugDistance = new List<Vector3>();
-                while (p != parent[p])
+
+                int root = p;
+                while (root != parent[root])
                 {
-                    int next = parent[p];
-                    parent[p] = parent[next];
+                    // sum these displacements along the path traversed to find
+                    // the total displacement to the root site.
                     
-                    var distance = Disks[next].Coordinates.IntVectorPositon() - 
-                            Disks[p].Coordinates.IntVectorPositon();
+                    v1 += Disks[parent[root]].Coordinates.IntVectorPositon() - 
+                        Disks[root].Coordinates.IntVectorPositon();
 
-                    if (distance.magnitude <= Mathf.Sqrt(2))
-                    {
-                        v1 += distance;
-                    }
-                    else
-                    {
-                        if (distance.x > 1)
-                        {
-                            v1 += distance - Vector3Int.right * (L - 1);
-                        }
-                        else if (distance.x < -1)
-                        {
-                            v1 += distance + Vector3Int.right * (L - 1);
-                        }
-                        if (distance.z > 1)
-                        {
-                            v1 += distance - Vector3Int.forward * (L - 1);
-                        }
-                        else if (distance.z < -1)
-                        {
-                            v1 += distance + Vector3Int.forward * (L - 1);
-                        }
-                    }
-
-                    debugDistance.Add(Disks[next].Position);
-                    debugDistance.Add(Disks[p].Position);
+                    debugDistance.Add(Disks[parent[root]].Position);
+                    debugDistance.Add(Disks[root].Position);
                     debugDistance.Add(v1);
-                    Distances.Add(debugDistance);
 
+                    root = parent[root];
+                }
+                    // if (2 * a.x > L - 1)
+                    // {
+                    //     a.x -= L;
+                    // }
+                    // else if (2 * System.Math.Abs(a.x) > L - 1)
+                    // {
+                    //     a.x += L;
+                    // }
+                    // if (2 * a.z > L - 1)
+                    // {
+                    //     a.z -= L;
+                    // }
+                    // else if (2 * System.Math.Abs(a.z) > L - 1)
+                    // {
+                    //     a.z += L;
+                    // }
+                    // v1 += a;
+                    // debugDistance.Add(v1);
+
+                // p.displacement = v1
+                while (p != root) 
+                {
+                    // We also update all displacements along the path
+                    // when we carry out the path compression
+                    
+
+
+                    int next = parent[p];
+                    parent[p] = root;
+
+                    // next.displacement = v1 -= p.displacement
+
+                    // v1 += Disks[root].Coordinates.IntVectorPositon() - 
+                    //         Disks[p].Coordinates.IntVectorPositon(); // bez sensu?
+
+                    
                     p = next;
                 }
+                Distances.Add(debugDistance);
+
             #endregion
-            return p;
+            return root;
         }
         public int Find(int p)
         {
