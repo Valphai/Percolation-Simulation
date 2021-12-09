@@ -52,7 +52,7 @@ namespace Grid
         /// <summary>Microcanonical setup method</summary>
         public static GridSystem GridSetup(
             ref GridSystem g, ObjectPool<Disk> disksPool,
-            int L = 40, bool visualize = false)
+            int L = 16, bool visualize = false)
         {
             g.disksPool = disksPool;
             g.L = L;

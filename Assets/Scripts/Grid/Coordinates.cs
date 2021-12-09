@@ -26,33 +26,33 @@ namespace Grid
     
             return new Coordinates(iX, iZ);
         }
-        public static Vector3Int DisplacementDistance(Disk p, Disk parent, int L)
+        public static Vector3Int DisplacementDistance(Disk parent, Disk p, Vector3Int toRoot, int L)
         {
-            Vector3Int parentP = parent.Coordinates.IntVectorPositon();
-            Vector3Int pP = p.Coordinates.IntVectorPositon();
+            Vector3Int parentPos = parent.Coordinates.IntVectorPositon();
+            Vector3Int pPos = p.Coordinates.IntVectorPositon();
 
-            bool farApart = Vector3Int.Distance(parentP, pP) > Mathf.Sqrt(2);
+            // bool farApart = Vector3Int.Distance(parentPos, pPos) > Mathf.Sqrt(2);
 
-            if (farApart)
-            {
-                if ((pP + Vector3Int.right).x > L - 1)
-                {
-                    parentP += Vector3Int.right * L;
-                }
-                else if ((pP - Vector3Int.right).x < 0)
-                {
-                    parentP -= Vector3Int.right * L;
-                }
-                if ((pP + Vector3Int.forward).z > L - 1)
-                {
-                    parentP += Vector3Int.forward * L;
-                }
-                else if ((pP - Vector3Int.forward).z < 0)
-                {
-                    parentP -= Vector3Int.forward * L;
-                }
-            }
-            return parentP - pP;
+            // if (farApart)
+            // {
+            //     if ((pPos + Vector3Int.right).x > L - 1)
+            //     {
+            //         parentPos += Vector3Int.right * L;
+            //     }
+            //     else if ((pPos - Vector3Int.right).x < 0)
+            //     {
+            //         parentPos -= Vector3Int.right * L;
+            //     }
+            //     if ((pPos + Vector3Int.forward).z > L - 1)
+            //     {
+            //         parentPos += Vector3Int.forward * L;
+            //     }
+            //     else if ((pPos - Vector3Int.forward).z < 0)
+            //     {
+            //         parentPos -= Vector3Int.forward * L;
+            //     }
+            // }
+            return parentPos - pPos;
         }
         public Vector3Int IntVectorPositon()
         {

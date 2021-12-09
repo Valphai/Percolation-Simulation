@@ -43,6 +43,7 @@ namespace Grid
 
                     if (binsFarApart)
                     {
+                        
                         if ((thisBinPos + Vector3Int.right).x > L - 1)
                         {
                             v2 += Vector3.right * planeLength;
@@ -69,9 +70,6 @@ namespace Grid
 
                     if (diskDistance.magnitude < 2 * Metrics.DiskRadius)
                     {
-                        // if (disk.ToParentDisplacement != null)
-                        //     disk.ToParentDisplacement = neigbV3IntTemp - thisBinPos;
-
                         uf.Distances.Clear();
                         // overlaps
                         uf.Union(disk.DiskIndex, neighbDisk.DiskIndex, L);

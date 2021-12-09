@@ -17,19 +17,20 @@ public class DiskInspector : Editor
     public override void OnInspectorGUI()	
     {
         base.OnInspectorGUI();
+        GUILayout.Label("Coordinates: " + disk.Coordinates.ToString());
+        GUILayout.Label("Displacement2Parent: " + disk.ToParentDisplacement.ToString());
     }
     private void OnSceneGUI()	
     {
-        if (disk != null && uf.FirstClusterOccured)
+        if (disk != null)
         {
+            Handles.color = Color.magenta;
             var parentPos = uf.Disks[uf.parent[disk.DiskIndex]].Position;
-    
-            Handles.color = Color.cyan;
-
-            Handles.DrawLine(disk.Position, parentPos, 3f);
 
             Handles.Label((disk.Position + parentPos) / 2f, 
                             disk.ToParentDisplacement.ToString());
+
+            Handles.DrawLine(disk.Position, parentPos, 3f);
         }
     }
 }

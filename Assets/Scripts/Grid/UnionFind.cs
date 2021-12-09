@@ -33,54 +33,54 @@ namespace Grid
 
         public void Union(int p, int q, int L) 
         {
-            Vector3Int displacementP;
-            Vector3Int displacementQ;
+            Vector3Int pToRootP;
+            Vector3Int qToRootQ;
 
             // here we sum displacement vectors
-            int rootP = Find(p, out displacementP, L);
-            int rootQ = Find(q, out displacementQ, L);
+            int rootP = Find(p, out pToRootP, L);
+            int rootQ = Find(q, out qToRootQ, L);
     
             // in the same group
             if (rootP == rootQ) 
             {
                 
-                if (System.Math.Abs(displacementP.x) == System.Math.Abs(displacementQ.x) ||
-                    System.Math.Abs(displacementP.z) == System.Math.Abs(displacementQ.z))
+                // if (System.Math.Abs(pToRootP.x) == System.Math.Abs(qToRootQ.x) ||
+                //     System.Math.Abs(pToRootP.z) == System.Math.Abs(qToRootQ.z))
+                // {
+                // if displacement vec differ by +- L => 
+                // cluster has a nontrivial winding number around one or
+                // both directions on the torus.
+                if (System.Math.Abs(pToRootP.x - qToRootQ.x) > L - 1 ||
+                    System.Math.Abs(pToRootP.z - qToRootQ.z) > L - 1)
                 {
-                    // if displacement vec differ by +- L => 
-                    // cluster has a nontrivial winding number around one or
-                    // both directions on the torus.
-                    if (System.Math.Abs(displacementP.x - displacementQ.x) > L - 1 ||
-                        System.Math.Abs(displacementP.z - displacementQ.z) > L - 1)
+                    #region Debug
+                        var assembly = Assembly.GetAssembly(typeof(UnityEditor.Editor));
+                        var type = assembly.GetType("UnityEditor.LogEntries");
+                        var method = type.GetMethod("Clear");
+                        method.Invoke(new object(), null);
+                        Debug.Log(pToRootP);
+                        Debug.Log(qToRootQ);
+                    #endregion
+
+                    FirstClusterOccured = true;
+                    firstClusterN = p;
+
+                    if (visualize)
                     {
-                        #region Debug
-                            var assembly = Assembly.GetAssembly(typeof(UnityEditor.Editor));
-                            var type = assembly.GetType("UnityEditor.LogEntries");
-                            var method = type.GetMethod("Clear");
-                            method.Invoke(new object(), null);
-                            Debug.Log(displacementP);
-                            Debug.Log(displacementQ);
-                        #endregion
-    
-                        FirstClusterOccured = true;
-                        firstClusterN = p;
-    
-                        if (visualize)
+                        int biggestRoot = Find(p);
+                        for (int i = 0; i < firstClusterN; i++)
                         {
-                            int biggestRoot = Find(p);
-                            for (int i = 0; i < firstClusterN; i++)
+                            if (Find(i) == biggestRoot)
                             {
-                                if (Find(i) == biggestRoot)
-                                {
-                                    Disks[i].Color = Color.red;
-                                }
+                                Disks[i].Color = Color.red;
                             }
-                            Disks[p].Color = Color.black;
-                            Disks[q].Color = Color.green;
-                            Disks[biggestRoot].Color = Color.cyan;
                         }
+                        Disks[p].Color = Color.black;
+                        Disks[q].Color = Color.green;
+                        Disks[biggestRoot].Color = Color.cyan;
                     }
                 }
+                // }
 
                 return;
             }
@@ -91,18 +91,54 @@ namespace Grid
                 parent[rootP] = rootQ;
                 size[rootQ] += size[rootP];
 
-                Disks[p].ToParentDisplacement = Disks[parent[p]].Coordinates.IntVectorPositon() 
-                                                - Disks[p].Coordinates.IntVectorPositon();
+                // NewMethod(L, pToRootP, rootP);
+                Disks[rootP].ToParentDisplacement = Coordinates.DisplacementDistance(
+                                                    Disks[parent[rootP]], Disks[rootP], 
+                                                    pToRootP, L);
             }
             else 
             {
                 parent[rootQ] = rootP;
                 size[rootP] += size[rootQ];
 
-                Disks[q].ToParentDisplacement = Disks[parent[q]].Coordinates.IntVectorPositon() 
-                                                - Disks[q].Coordinates.IntVectorPositon();
+                // NewMethod(L, qToRootQ, rootQ);
+                Disks[rootQ].ToParentDisplacement = Coordinates.DisplacementDistance(
+                                                    Disks[parent[rootQ]], Disks[rootQ], 
+                                                    qToRootQ, L);
             }
             count--;
+
+        }
+        private void NewMethod(int L, Vector3Int mToRootM, int rootM)
+        {
+            Disks[rootM].ToParentDisplacement = Vector3Int.zero;
+            Vector3Int vec = Disks[rootM].Coordinates.IntVectorPositon();
+            Vector3Int parentVec = Disks[parent[rootM]].Coordinates.IntVectorPositon();
+
+            if (vec.x + System.Math.Abs(mToRootM.x) >= L - 1)
+            {
+                Disks[rootM].ToParentDisplacement += (parentVec + Vector3Int.right * L) - vec;
+            }
+            else if (vec.x - System.Math.Abs(mToRootM.x) <= 0)
+            {
+                Disks[rootM].ToParentDisplacement += (parentVec - Vector3Int.right * L) - vec;
+            }
+            else
+            {
+                Disks[rootM].ToParentDisplacement += Vector3Int.right * (parentVec.x - vec.x);
+            }
+            if (vec.z + System.Math.Abs(mToRootM.z) >= L - 1)
+            {
+                Disks[rootM].ToParentDisplacement += (parentVec + Vector3Int.forward * L) - vec;
+            }
+            else if (vec.z - System.Math.Abs(mToRootM.z) <= 0)
+            {
+                Disks[rootM].ToParentDisplacement += (parentVec - Vector3Int.forward * L) - vec;
+            }
+            else
+            {
+                Disks[rootM].ToParentDisplacement += Vector3Int.forward * (parentVec.z - vec.z);
+            }
 
         }
         public int Find(int p, out Vector3Int v1, int L) 

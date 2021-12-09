@@ -9,7 +9,7 @@ namespace Grid
         public const float DiskLabelHeight = BinHeight + DiskHeight * 2.25f;
         public const float BinFontSize = .3f;
         public const float DiskFontSize = .7f;
-        public const int SpawnLower = 5000;//8443;
-        public const int SpawnHigher = 6000;//14871;
+        public const int SpawnLower = 600;//8443;
+        public const int SpawnHigher = 800;//14871;
     }
 }
