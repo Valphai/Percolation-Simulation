@@ -39,30 +39,24 @@ namespace Grid
                 {
                     Disk neighbDisk = neighBin.Disks[i];
                     Vector3 v2 = neighbDisk.Position;
-                    // Vector3Int neigbV3IntTemp = neighBinPos;
 
                     if (binsFarApart)
                     {
-                        
                         if ((thisBinPos + Vector3Int.right).x > L - 1)
                         {
                             v2 += Vector3.right * planeLength;
-                            // neigbV3IntTemp += Vector3Int.right * L;
                         }
                         else if ((thisBinPos - Vector3Int.right).x < 0)
                         {
                             v2 -= Vector3.right * planeLength;
-                            // neigbV3IntTemp -= Vector3Int.right * L;
                         }
                         if ((thisBinPos + Vector3Int.forward).z > L - 1)
                         {
                             v2 += Vector3.forward * planeLength;
-                            // neigbV3IntTemp += Vector3Int.forward * L;
                         }
                         else if ((thisBinPos - Vector3Int.forward).z < 0)
                         {
                             v2 -= Vector3.forward * planeLength;
-                            // neigbV3IntTemp -= Vector3Int.forward * L;
                         }
                     }
 

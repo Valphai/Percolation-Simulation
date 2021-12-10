@@ -91,55 +91,58 @@ namespace Grid
                 parent[rootP] = rootQ;
                 size[rootQ] += size[rootP];
 
-                // NewMethod(L, pToRootP, rootP);
-                Disks[rootP].ToParentDisplacement = Coordinates.DisplacementDistance(
-                                                    Disks[parent[rootP]], Disks[rootP], 
-                                                    pToRootP, L);
+                Disks[rootP].ToParentDisplacement = PeriodicShiftVector(q, p,
+                                                    rootQ, rootP, qToRootQ, L);
             }
-            else 
+            else
             {
                 parent[rootQ] = rootP;
                 size[rootP] += size[rootQ];
 
-                // NewMethod(L, qToRootQ, rootQ);
-                Disks[rootQ].ToParentDisplacement = Coordinates.DisplacementDistance(
-                                                    Disks[parent[rootQ]], Disks[rootQ], 
-                                                    qToRootQ, L);
+                Disks[rootQ].ToParentDisplacement = PeriodicShiftVector(p, q,
+                                                    rootP, rootQ, pToRootP, L);
             }
             count--;
 
         }
-        private void NewMethod(int L, Vector3Int mToRootM, int rootM)
+
+        // private Vector3Int PeriodicShiftVector(int p, int q, 
+        //     int rootP, int rootQ, Vector3Int mToRootM, int L)
+        // {
+        private Vector3Int PeriodicShiftVector(int to, int from, 
+            int rootTo, int rootFrom, Vector3Int toRootTo, int L)
         {
-            Disks[rootM].ToParentDisplacement = Vector3Int.zero;
-            Vector3Int vec = Disks[rootM].Coordinates.IntVectorPositon();
-            Vector3Int parentVec = Disks[parent[rootM]].Coordinates.IntVectorPositon();
+            Vector3Int toPos = Disks[to].Coordinates.IntVectorPositon();
+            Vector3Int fromPos = Disks[from].Coordinates.IntVectorPositon();
+            Vector3Int rTovec = Disks[rootTo].Coordinates.IntVectorPositon();
+            Vector3Int rFromvec = Disks[rootFrom].Coordinates.IntVectorPositon();
+            Vector3Int newRootX = Vector3Int.zero;
+            Vector3Int newRootZ = Vector3Int.zero;
 
-            if (vec.x + System.Math.Abs(mToRootM.x) >= L - 1)
+            if ((toPos - fromPos).x == L - 1 || (toPos - fromPos).z == L - 1 ||
+                (toPos - fromPos).x == -(L - 1) || (toPos - fromPos).z == -(L - 1))
             {
-                Disks[rootM].ToParentDisplacement += (parentVec + Vector3Int.right * L) - vec;
-            }
-            else if (vec.x - System.Math.Abs(mToRootM.x) <= 0)
-            {
-                Disks[rootM].ToParentDisplacement += (parentVec - Vector3Int.right * L) - vec;
-            }
-            else
-            {
-                Disks[rootM].ToParentDisplacement += Vector3Int.right * (parentVec.x - vec.x);
-            }
-            if (vec.z + System.Math.Abs(mToRootM.z) >= L - 1)
-            {
-                Disks[rootM].ToParentDisplacement += (parentVec + Vector3Int.forward * L) - vec;
-            }
-            else if (vec.z - System.Math.Abs(mToRootM.z) <= 0)
-            {
-                Disks[rootM].ToParentDisplacement += (parentVec - Vector3Int.forward * L) - vec;
-            }
-            else
-            {
-                Disks[rootM].ToParentDisplacement += Vector3Int.forward * (parentVec.z - vec.z);
+                if ((toPos - fromPos).x == -(L - 1))
+                {
+                    newRootX = rTovec + Vector3Int.right * L;
+                }
+                else if ((toPos - fromPos).x == L - 1)
+                {
+                    newRootX = rTovec - Vector3Int.right * L;
+                }
+                if ((toPos - fromPos).z == -(L - 1))
+                {
+                    newRootZ = rTovec + Vector3Int.forward * L;
+                }
+                else if ((toPos - fromPos).z == L - 1)
+                {
+                    newRootZ = rTovec - Vector3Int.forward * L;
+                }
+
+                return newRootX + newRootZ - rFromvec;
             }
 
+            return Disks[from].ToParentDisplacement + (toPos - fromPos) + toRootTo;
         }
         public int Find(int p, out Vector3Int v1, int L) 
         {

@@ -1,4 +1,3 @@
-using System.Collections;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -37,7 +36,7 @@ namespace Grid
             if (visualize)
                 gridMesh.Triangulate(bins);
 
-            StartCoroutine(PopulateGrid());
+            PopulateGrid();
     	}
 
         /// <summary>Method for running tests</summary>
@@ -140,7 +139,7 @@ namespace Grid
     		int index = coords.x + coords.z * L;
     		return bins[index];
     	}
-        private IEnumerator PopulateGrid()
+        private void PopulateGrid()
         {
             unionFind = new UnionFind(n, visualize);
             float a = Metrics.DiskRadius;
@@ -148,12 +147,11 @@ namespace Grid
            
             for (int i = 0; i < n; i++)
             {
-                if (unionFind.FirstClusterOccured) yield break;
+                if (unionFind.FirstClusterOccured) return;
 
                 float x = UnityEngine.Random.Range(-a, L * diamater - a);
                 float z = UnityEngine.Random.Range(-a, L * diamater - a);
                 AddDisk(x, z, i, unionFind);
-                yield return new WaitForSeconds(interval);
             }
         }
         private void CreateBin(int x, int z, int i)
