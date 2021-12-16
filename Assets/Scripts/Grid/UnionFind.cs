@@ -43,15 +43,11 @@ namespace Grid
             // in the same group
             if (rootP == rootQ) 
             {
-                
-                // if (System.Math.Abs(pToRootP.x) == System.Math.Abs(qToRootQ.x) ||
-                //     System.Math.Abs(pToRootP.z) == System.Math.Abs(qToRootQ.z))
-                // {
                 // if displacement vec differ by +- L => 
                 // cluster has a nontrivial winding number around one or
                 // both directions on the torus.
-                if (System.Math.Abs(pToRootP.x - qToRootQ.x) > L - 1 ||
-                    System.Math.Abs(pToRootP.z - qToRootQ.z) > L - 1)
+                if (System.Math.Abs(pToRootP.x - qToRootQ.x) >= L - 1 ||
+                    System.Math.Abs(pToRootP.z - qToRootQ.z) >= L - 1)
                 {
                     #region Debug
                         var assembly = Assembly.GetAssembly(typeof(UnityEditor.Editor));
@@ -80,7 +76,6 @@ namespace Grid
                         Disks[biggestRoot].Color = Color.cyan;
                     }
                 }
-                // }
 
                 return;
             }
@@ -92,7 +87,8 @@ namespace Grid
                 size[rootQ] += size[rootP];
 
                 Disks[rootP].ToParentDisplacement = PeriodicShiftVector(q, p,
-                                                    rootQ, rootP, qToRootQ, L);
+                                                                qToRootQ, L);
+
             }
             else
             {
@@ -100,54 +96,50 @@ namespace Grid
                 size[rootP] += size[rootQ];
 
                 Disks[rootQ].ToParentDisplacement = PeriodicShiftVector(p, q,
-                                                    rootP, rootQ, pToRootP, L);
+                                                                pToRootP, L);
+                                                                
             }
             count--;
 
         }
-
-        // private Vector3Int PeriodicShiftVector(int p, int q, 
-        //     int rootP, int rootQ, Vector3Int mToRootM, int L)
-        // {
         private Vector3Int PeriodicShiftVector(int to, int from, 
-            int rootTo, int rootFrom, Vector3Int toRootTo, int L)
+            Vector3Int toRootTo, int L)
         {
             Vector3Int toPos = Disks[to].Coordinates.IntVectorPositon();
             Vector3Int fromPos = Disks[from].Coordinates.IntVectorPositon();
-            Vector3Int rTovec = Disks[rootTo].Coordinates.IntVectorPositon();
-            Vector3Int rFromvec = Disks[rootFrom].Coordinates.IntVectorPositon();
-            Vector3Int newRootX = Vector3Int.zero;
-            Vector3Int newRootZ = Vector3Int.zero;
+            Vector3Int newToX = Vector3Int.zero;
+            Vector3Int newToZ = Vector3Int.zero;
 
             if ((toPos - fromPos).x == L - 1 || (toPos - fromPos).z == L - 1 ||
                 (toPos - fromPos).x == -(L - 1) || (toPos - fromPos).z == -(L - 1))
             {
                 if ((toPos - fromPos).x == -(L - 1))
                 {
-                    newRootX = rTovec + Vector3Int.right * L;
+                    newToX = toPos + Vector3Int.right * L;
                 }
                 else if ((toPos - fromPos).x == L - 1)
                 {
-                    newRootX = rTovec - Vector3Int.right * L;
+                    newToX = toPos - Vector3Int.right * L;
                 }
                 if ((toPos - fromPos).z == -(L - 1))
                 {
-                    newRootZ = rTovec + Vector3Int.forward * L;
+                    newToZ = toPos + Vector3Int.forward * L;
                 }
                 else if ((toPos - fromPos).z == L - 1)
                 {
-                    newRootZ = rTovec - Vector3Int.forward * L;
+                    newToZ = toPos - Vector3Int.forward * L;
                 }
 
-                return newRootX + newRootZ - rFromvec;
+                toPos = newToX + newToZ;
             }
 
-            return Disks[from].ToParentDisplacement + (toPos - fromPos) + toRootTo;
+            return -Disks[from].ToParentDisplacement + (toPos - fromPos) + toRootTo;
         }
         public int Find(int p, out Vector3Int v1, int L) 
         {
             v1 = Vector3Int.zero;
             var debugDistance = new List<Vector3>();
+            int startingP = p;
 
             int root = p;
             while (root != parent[root])
@@ -181,7 +173,7 @@ namespace Grid
                     p = next;
                 }
                 // p.displacement = v1
-                Disks[p].ToParentDisplacement = v1;
+                Disks[startingP].ToParentDisplacement = v1;
 
                 Distances.Add(debugDistance);
 
