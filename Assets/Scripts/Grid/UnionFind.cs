@@ -146,12 +146,6 @@ namespace Grid
             {
                 // sum these displacements along the path traversed to find
                 // the total displacement to the root site.
-                
-
-                // debugDistance.Add(Disks[parent[root]].Position);
-                // debugDistance.Add(Disks[root].Position);
-                // debugDistance.Add(v1);
-
                 v1 += Disks[root].ToParentDisplacement;
 
                 root = parent[root];

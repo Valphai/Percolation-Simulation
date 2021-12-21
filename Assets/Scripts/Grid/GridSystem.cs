@@ -1,4 +1,3 @@
-using System.Collections;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -20,8 +19,6 @@ namespace Grid
         private GridMesh gridMesh;
         private Canvas gridCanvas;
         private ObjectPool<Disk> disksPool;
-        [Range(.1f,15f)]
-        public float interval;
 
         private void Awake()
         {
@@ -55,7 +52,7 @@ namespace Grid
         /// <summary>Microcanonical setup method</summary>
         public static GridSystem GridSetup(
             ref GridSystem g, ObjectPool<Disk> disksPool,
-            int L = 8, bool visualize = false)
+            int L = 16, bool visualize = false)
         {
             g.disksPool = disksPool;
             g.L = L;
@@ -153,7 +150,6 @@ namespace Grid
                 float x = UnityEngine.Random.Range(-a, L * diamater - a);
                 float z = UnityEngine.Random.Range(-a, L * diamater - a);
                 AddDisk(x, z, i, unionFind);
-                // yield return new WaitForSeconds(interval);
             }
         }
         private void CreateBin(int x, int z, int i)

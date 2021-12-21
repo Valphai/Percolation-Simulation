@@ -43,19 +43,19 @@ namespace Grid
 
                     if (binsFarApart)
                     {
-                        if ((thisBinPos + Vector3Int.right).x > L - 1)
+                        if ((neighBinPos - thisBinPos).x == -(L - 1))
                         {
                             v2 += Vector3.right * planeLength;
                         }
-                        else if ((thisBinPos - Vector3Int.right).x < 0)
+                        else if ((neighBinPos - thisBinPos).x == L - 1)
                         {
                             v2 -= Vector3.right * planeLength;
                         }
-                        if ((thisBinPos + Vector3Int.forward).z > L - 1)
+                        if ((neighBinPos - thisBinPos).z == -(L - 1))
                         {
                             v2 += Vector3.forward * planeLength;
                         }
-                        else if ((thisBinPos - Vector3Int.forward).z < 0)
+                        else if ((neighBinPos - thisBinPos).z == L - 1)
                         {
                             v2 -= Vector3.forward * planeLength;
                         }
@@ -63,7 +63,6 @@ namespace Grid
 
                     if (Vector3.Distance(v2, v1) < 2 * Metrics.DiskRadius)
                     {
-                        uf.Distances.Clear();
                         // overlaps
                         uf.Union(disk.DiskIndex, neighbDisk.DiskIndex, L);
                     }
