@@ -19,7 +19,7 @@ namespace Grid
         {
             float planeLength = Metrics.DiskRadius * 2 * L;
 
-            // check for intersecting disks
+            // check for intersecting disks in the same bin
             for (int i = 0; i < Disks.Count; i++)
             {
                 uf.Union(disk.DiskIndex, Disks[i].DiskIndex, L);
@@ -27,51 +27,47 @@ namespace Grid
 
             Disks.Add(disk);
             Vector3 v1 = disk.Position;
-
             Vector3Int thisBinPos = Coordinates.IntVectorPositon();
+
             // go through all neigbors
             foreach (GridBin neighBin in neighbors)
             {
                 Vector3Int neighBinPos = neighBin.Coordinates.IntVectorPositon();
                 bool binsFarApart = Vector3Int.Distance(thisBinPos, neighBinPos) > Mathf.Sqrt(2);
 
+                // go through their disks
                 for (int i = 0; i < neighBin.Disks.Count; i++)
                 {
-                    Vector3 v2 = neighBin.Disks[i].Position;
+                    Disk neighbDisk = neighBin.Disks[i];
+                    Vector3 v2 = neighbDisk.Position;
 
                     if (binsFarApart)
                     {
-                        if ((thisBinPos + Vector3Int.right).x > L - 1)
+                        if ((neighBinPos - thisBinPos).x == -(L - 1))
                         {
                             v2 += Vector3.right * planeLength;
                         }
-                        else if ((thisBinPos - Vector3Int.right).x < 0)
+                        else if ((neighBinPos - thisBinPos).x == L - 1)
                         {
                             v2 -= Vector3.right * planeLength;
                         }
-                        if ((thisBinPos + Vector3Int.forward).z > L - 1)
+                        if ((neighBinPos - thisBinPos).z == -(L - 1))
                         {
                             v2 += Vector3.forward * planeLength;
                         }
-                        else if ((thisBinPos - Vector3Int.forward).z < 0)
+                        else if ((neighBinPos - thisBinPos).z == L - 1)
                         {
                             v2 -= Vector3.forward * planeLength;
                         }
                     }
 
-                    Vector3 diskDistance = v2 - v1;
-
-                    if (diskDistance.magnitude < 2 * Metrics.DiskRadius)
+                    if (Vector3.Distance(v2, v1) < 2 * Metrics.DiskRadius)
                     {
-                        uf.Distances.Clear();
                         // overlaps
-                        uf.Union(disk.DiskIndex, neighBin.Disks[i].DiskIndex, L);
+                        uf.Union(disk.DiskIndex, neighbDisk.DiskIndex, L);
                     }
                 }
             }
-            // go through all their disks 
-            // check if kolo pochodzace od pozycji dyskow overlap kola w disks List<Disk>
-
         }
     
         public GridBin GetNeighbor(Direction direction) 

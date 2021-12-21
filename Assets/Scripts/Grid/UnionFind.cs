@@ -11,8 +11,8 @@ namespace Grid
         public Disk[] Disks { get; private set; }
         public bool FirstClusterOccured { get; private set; }
         public List<List<Vector3>> Distances { get; private set; }
+        public int[] parent { get; private set; }
         private bool visualize;
-        private int[] parent;
     
         /// <summary> size of each group </summary>
         private int[] size;
@@ -33,53 +33,48 @@ namespace Grid
 
         public void Union(int p, int q, int L) 
         {
-            Vector3Int displacementP;
-            Vector3Int displacementQ;
+            Vector3Int pToRootP;
+            Vector3Int qToRootQ;
 
             // here we sum displacement vectors
-            int rootP = Find(p, out displacementP, L);
-            int rootQ = Find(q, out displacementQ, L);
+            int rootP = Find(p, out pToRootP, L);
+            int rootQ = Find(q, out qToRootQ, L);
     
             // in the same group
             if (rootP == rootQ) 
             {
-                
-                if (System.Math.Abs(displacementP.x - displacementQ.x) == L - 1 ||
-                    System.Math.Abs(displacementP.z - displacementQ.z) == L - 1)
+                // if displacement vec differ by +- L => 
+                // cluster has a nontrivial winding number around one or
+                // both directions on the torus.
+                if (System.Math.Abs(pToRootP.x - qToRootQ.x) >= L - 1 ||
+                    System.Math.Abs(pToRootP.z - qToRootQ.z) >= L - 1)
                 {
-                    // if displacement vec differ by +- L => 
-                    // cluster has a nontrivial winding number around one or
-                    // both directions on the torus.
-                    // if (System.Math.Abs(displacementP.x) == System.Math.Abs(displacementQ.x) ||
-                    //     System.Math.Abs(displacementP.z) == System.Math.Abs(displacementQ.z))
-                    // {
-                        #region Debug
-                            var assembly = Assembly.GetAssembly(typeof(UnityEditor.Editor));
-                            var type = assembly.GetType("UnityEditor.LogEntries");
-                            var method = type.GetMethod("Clear");
-                            method.Invoke(new object(), null);
-                            Debug.Log(displacementP);
-                            Debug.Log(displacementQ);
-                        #endregion
-    
-                        FirstClusterOccured = true;
-                        firstClusterN = p;
-    
-                        if (visualize)
+                    #region Debug
+                        var assembly = Assembly.GetAssembly(typeof(UnityEditor.Editor));
+                        var type = assembly.GetType("UnityEditor.LogEntries");
+                        var method = type.GetMethod("Clear");
+                        method.Invoke(new object(), null);
+                        Debug.Log(pToRootP);
+                        Debug.Log(qToRootQ);
+                    #endregion
+
+                    FirstClusterOccured = true;
+                    firstClusterN = p;
+
+                    if (visualize)
+                    {
+                        int biggestRoot = Find(p);
+                        for (int i = 0; i < firstClusterN; i++)
                         {
-                            int biggestRoot = Find(p);
-                            for (int i = 0; i < firstClusterN; i++)
+                            if (Find(i) == biggestRoot)
                             {
-                                if (Find(i) == biggestRoot)
-                                {
-                                    Disks[i].Color = Color.red;
-                                }
+                                Disks[i].Color = Color.red;
                             }
-                            Disks[p].Color = Color.black;
-                            Disks[q].Color = Color.green;
-                            Disks[biggestRoot].Color = Color.cyan;
                         }
-                    // }
+                        Disks[p].Color = Color.black;
+                        Disks[q].Color = Color.green;
+                        Disks[biggestRoot].Color = Color.cyan;
+                    }
                 }
 
                 return;
@@ -90,75 +85,90 @@ namespace Grid
             {
                 parent[rootP] = rootQ;
                 size[rootQ] += size[rootP];
+
+                Disks[rootP].ToParentDisplacement = PeriodicShiftVector(q, p,
+                                                                qToRootQ, L);
+
             }
-            else 
+            else
             {
                 parent[rootQ] = rootP;
                 size[rootP] += size[rootQ];
+
+                Disks[rootQ].ToParentDisplacement = PeriodicShiftVector(p, q,
+                                                                pToRootP, L);
+                                                                
             }
             count--;
+
+        }
+        private Vector3Int PeriodicShiftVector(int to, int from, 
+            Vector3Int toRootTo, int L)
+        {
+            Vector3Int toPos = Disks[to].Coordinates.IntVectorPositon();
+            Vector3Int fromPos = Disks[from].Coordinates.IntVectorPositon();
+            Vector3Int newToX = Vector3Int.zero;
+            Vector3Int newToZ = Vector3Int.zero;
+
+            if ((toPos - fromPos).x == L - 1 || (toPos - fromPos).z == L - 1 ||
+                (toPos - fromPos).x == -(L - 1) || (toPos - fromPos).z == -(L - 1))
+            {
+                if ((toPos - fromPos).x == -(L - 1))
+                {
+                    newToX = toPos + Vector3Int.right * L;
+                }
+                else if ((toPos - fromPos).x == L - 1)
+                {
+                    newToX = toPos - Vector3Int.right * L;
+                }
+                if ((toPos - fromPos).z == -(L - 1))
+                {
+                    newToZ = toPos + Vector3Int.forward * L;
+                }
+                else if ((toPos - fromPos).z == L - 1)
+                {
+                    newToZ = toPos - Vector3Int.forward * L;
+                }
+
+                toPos = newToX + newToZ;
+            }
+
+            return -Disks[from].ToParentDisplacement + (toPos - fromPos) + toRootTo;
         }
         public int Find(int p, out Vector3Int v1, int L) 
         {
             v1 = Vector3Int.zero;
-            // var a = Vector3Int.zero;
+            var debugDistance = new List<Vector3>();
+            int startingP = p;
+
+            int root = p;
+            while (root != parent[root])
+            {
+                // sum these displacements along the path traversed to find
+                // the total displacement to the root site.
+                v1 += Disks[root].ToParentDisplacement;
+
+                root = parent[root];
+            }
 
             #region Path_Compression    
-                var debugDistance = new List<Vector3>();
-
-                int root = p;
-                while (root != parent[root])
-                {
-                    // sum these displacements along the path traversed to find
-                    // the total displacement to the root site.
-                    
-                    v1 += Disks[parent[root]].Coordinates.IntVectorPositon() - 
-                        Disks[root].Coordinates.IntVectorPositon();
-
-                    debugDistance.Add(Disks[parent[root]].Position);
-                    debugDistance.Add(Disks[root].Position);
-                    debugDistance.Add(v1);
-
-                    root = parent[root];
-                }
-                    // if (2 * a.x > L - 1)
-                    // {
-                    //     a.x -= L;
-                    // }
-                    // else if (2 * System.Math.Abs(a.x) > L - 1)
-                    // {
-                    //     a.x += L;
-                    // }
-                    // if (2 * a.z > L - 1)
-                    // {
-                    //     a.z -= L;
-                    // }
-                    // else if (2 * System.Math.Abs(a.z) > L - 1)
-                    // {
-                    //     a.z += L;
-                    // }
-                    // v1 += a;
-                    // debugDistance.Add(v1);
-
-                // p.displacement = v1
+                var v = v1;
                 while (p != root) 
                 {
                     // We also update all displacements along the path
                     // when we carry out the path compression
-                    
-
 
                     int next = parent[p];
                     parent[p] = root;
 
-                    // next.displacement = v1 -= p.displacement
-
-                    // v1 += Disks[root].Coordinates.IntVectorPositon() - 
-                    //         Disks[p].Coordinates.IntVectorPositon(); // bez sensu?
-
+                    // next.displacement = v -= p.displacement
+                    Disks[next].ToParentDisplacement = v -= Disks[p].ToParentDisplacement;
                     
                     p = next;
                 }
+                // p.displacement = v1
+                Disks[startingP].ToParentDisplacement = v1;
+
                 Distances.Add(debugDistance);
 
             #endregion
