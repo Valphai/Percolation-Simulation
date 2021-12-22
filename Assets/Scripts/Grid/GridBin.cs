@@ -7,14 +7,17 @@ namespace Grid
     {
         public Coordinates Coordinates;
         public RectTransform UiRect;
-        public List<Disk> Disks { get; private set; }
-        private GridBin[] neighbors;
+        [SerializeField] 
+        public List<Disk> Disks { get; set; }
+        [SerializeField]
+        public GridBin[] neighbors;
     
-        private void Awake()
-        {
-            Disks = new List<Disk>();
-            neighbors = new GridBin[8];
-        }
+        // private void OnEnable()//s
+        // {
+        //     Debug.Log("P");
+        //     Disks = new List<Disk>();
+            // neighbors = new GridBin[8];
+        // }
         public void AddDisk(Disk disk, UnionFind uf, int L)
         {
             float planeLength = Metrics.DiskRadius * 2 * L;

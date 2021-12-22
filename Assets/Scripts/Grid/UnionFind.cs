@@ -1,16 +1,16 @@
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
+using VisualDebugging;
 
 namespace Grid
 {
+    [System.Serializable]
     public class UnionFind
     {
         /// <summary>Number of disks needed to create a cluster</summary>
         public int firstClusterN;
         public Disk[] Disks { get; private set; }
-        public bool FirstClusterOccured { get; private set; }
-        public List<List<Vector3>> Distances { get; private set; }
+        public bool FirstClusterOccured { get; private set; }//ss
         public int[] parent { get; private set; }
         private bool visualize;
     
@@ -22,7 +22,7 @@ namespace Grid
     
         public UnionFind(int n, bool visuals)
         {
-            Distances = new List<List<Vector3>>();
+            VisualDebug.Initialize();
 
             visualize = visuals;
             count = n;
@@ -33,6 +33,11 @@ namespace Grid
 
         public void Union(int p, int q, int L) 
         {
+            
+            VisualDebug.BeginFrame($"Union({p},{q})", true);
+            VisualDebug.DrawPoint(Disks[p].Position, Metrics.DiskRadius);
+            VisualDebug.DrawPoint(Disks[q].Position, Metrics.DiskRadius);
+
             Vector3Int pToRootP;
             Vector3Int qToRootQ;
 
@@ -49,17 +54,19 @@ namespace Grid
                 if (System.Math.Abs(pToRootP.x - qToRootQ.x) >= L - 1 ||
                     System.Math.Abs(pToRootP.z - qToRootQ.z) >= L - 1)
                 {
-                    #region Debug
-                        var assembly = Assembly.GetAssembly(typeof(UnityEditor.Editor));
-                        var type = assembly.GetType("UnityEditor.LogEntries");
-                        var method = type.GetMethod("Clear");
-                        method.Invoke(new object(), null);
-                        Debug.Log(pToRootP);
-                        Debug.Log(qToRootQ);
-                    #endregion
+                    // #region Debug
+                    //     var assembly = Assembly.GetAssembly(typeof(UnityEditor.Editor));
+                    //     var type = assembly.GetType("UnityEditor.LogEntries");
+                    //     var method = type.GetMethod("Clear");
+                    //     method.Invoke(new object(), null);
+                    //     Debug.Log(pToRootP);
+                    //     Debug.Log(qToRootQ);
+                    // #endregion
 
                     FirstClusterOccured = true;
                     firstClusterN = p;
+
+                    VisualDebug.Save();
 
                     if (visualize)
                     {
@@ -89,6 +96,12 @@ namespace Grid
                 Disks[rootP].ToParentDisplacement = PeriodicShiftVector(q, p,
                                                                 qToRootQ, L);
 
+                VisualDebug.BeginFrame("rootP->rootQ", true);
+                VisualDebug.SetColour(Colours.lightBlue, Colours.veryDarkGrey);
+                VisualDebug.DrawPoint(Disks[rootQ].Position, Metrics.DiskRadius);
+                VisualDebug.DontShowNextElementWhenFrameIsInBackground();
+                VisualDebug.SetColour(Colours.lightGreen, Colours.veryDarkGrey);
+                VisualDebug.DrawLineSegmentWithLabel(Disks[p].Position, Disks[rootQ].Position, Disks[rootP].ToParentDisplacement.ToString());
             }
             else
             {
@@ -98,9 +111,16 @@ namespace Grid
                 Disks[rootQ].ToParentDisplacement = PeriodicShiftVector(p, q,
                                                                 pToRootP, L);
                                                                 
+                VisualDebug.BeginFrame("rootQ->rootP", true);
+                VisualDebug.SetColour(Colours.lightBlue, Colours.veryDarkGrey);
+                VisualDebug.DrawPoint(Disks[rootP].Position, Metrics.DiskRadius);
+                VisualDebug.DontShowNextElementWhenFrameIsInBackground();
+                VisualDebug.SetColour(Colours.lightGreen, Colours.veryDarkGrey);
+                VisualDebug.DrawLineSegmentWithLabel(Disks[rootP].Position, Disks[q].Position, Disks[rootQ].ToParentDisplacement.ToString());
             }
             count--;
-
+            
+            
         }
         private Vector3Int PeriodicShiftVector(int to, int from, 
             Vector3Int toRootTo, int L)
@@ -115,22 +135,20 @@ namespace Grid
             {
                 if ((toPos - fromPos).x == -(L - 1))
                 {
-                    newToX = toPos + Vector3Int.right * L;
+                    toPos += Vector3Int.right * L;
                 }
                 else if ((toPos - fromPos).x == L - 1)
                 {
-                    newToX = toPos - Vector3Int.right * L;
+                    toPos -= Vector3Int.right * L;
                 }
                 if ((toPos - fromPos).z == -(L - 1))
                 {
-                    newToZ = toPos + Vector3Int.forward * L;
+                    toPos += Vector3Int.forward * L;
                 }
                 else if ((toPos - fromPos).z == L - 1)
                 {
-                    newToZ = toPos - Vector3Int.forward * L;
+                    toPos -= Vector3Int.forward * L;
                 }
-
-                toPos = newToX + newToZ;
             }
 
             return -Disks[from].ToParentDisplacement + (toPos - fromPos) + toRootTo;
@@ -169,7 +187,6 @@ namespace Grid
                 // p.displacement = v1
                 Disks[startingP].ToParentDisplacement = v1;
 
-                Distances.Add(debugDistance);
 
             #endregion
             return root;

@@ -2,7 +2,8 @@
     "name": "Grid",
     "rootNamespace": "",
     "references": [
-        "GUID:6055be8ebefd69e48b49212b09b47b2f"
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:e7bc342ddc1135d40bf9093a6c31dcd5"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

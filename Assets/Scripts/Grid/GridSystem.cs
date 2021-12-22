@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -11,20 +12,23 @@ namespace Grid
         public int L;
         /// <summary>number of disks</summary>
         public int n { get; private set; }
+        [SerializeField] 
         public GridBin[] bins { get; private set; }
+        [SerializeField]
         public UnionFind unionFind { get; private set; }
         private bool visualize;
         private GridBin binPrefab;
         private TextMeshProUGUI labelPrefab;
         private GridMesh gridMesh;
         private Canvas gridCanvas;
+        [SerializeField]
         private ObjectPool<Disk> disksPool;
 
-        private void Awake()
+        private void OnValidate()	
         {
             gridCanvas = GetComponentInChildren<Canvas>();
             gridMesh = GetComponentInChildren<GridMesh>();
-
+            
             binPrefab = AssetDatabase.LoadAssetAtPath<GridBin>("Assets/Prefabs/Grid/Bin.prefab");
             labelPrefab = AssetDatabase.LoadAssetAtPath<TextMeshProUGUI>("Assets/Prefabs/Grid/Label.prefab");
         }
@@ -36,7 +40,6 @@ namespace Grid
 
             PopulateGrid();
     	}
-
         /// <summary>Method for running tests</summary>
         public static GridSystem GridSetup(
             ObjectPool<Disk> disksPool, int nMin, int nMax, 
@@ -85,7 +88,7 @@ namespace Grid
                 }
             }
             unionFind = null;
-            Resources.UnloadUnusedAssets();
+            //Resources.UnloadUnusedAssets();
         }
         public void CleanBins()
         {
@@ -113,7 +116,6 @@ namespace Grid
                 Metrics.BinHeight + Metrics.DiskHeight,
                 z
             );
-    
             Disk disk = disksPool.Get();
             uF.TickDisk(disk, i);
             
@@ -121,6 +123,8 @@ namespace Grid
             disk.transform.SetParent(transform, true);
 
             disk.Coordinates = Coordinates.FromVectorCoords(position);
+
+            disk.meshRenderer = disk.GetComponent<MeshRenderer>();
     
             // find the bin its on
             GridBin bin = GetBin(disk.Coordinates);
@@ -165,6 +169,9 @@ namespace Grid
             bin.transform.SetParent(transform, false);
             bin.transform.localPosition = position;
             bin.Coordinates = Coordinates.FromIntCoords(x, z);
+
+            bin.Disks = new List<Disk>();
+            bin.neighbors = new GridBin[8];
             
             if (x > 0)
             {

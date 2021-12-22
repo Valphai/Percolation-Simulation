@@ -13,7 +13,8 @@ namespace Grid
             get { return transform.localPosition; }
             set { transform.localPosition = value; }
         }
-        private MeshRenderer meshRenderer;
+        [SerializeField, HideInInspector]
+        public MeshRenderer meshRenderer;
         private Color color;
         public Color Color
         {
@@ -34,16 +35,22 @@ namespace Grid
             set 
             { 
                 color = value;
-                meshRenderer.material.color = color;
+                var tempMaterial = new Material(meshRenderer.sharedMaterial);
+                tempMaterial.color = color;
+                meshRenderer.sharedMaterial = tempMaterial;
+                // meshRenderer.material.color = color;
             }
         }
     
-        private void Awake()	
-        {
-            meshRenderer = GetComponent<MeshRenderer>();
-            Position = Vector3.zero;
+        // private void OnValidate()	
+        // {
+        //     if (!meshRenderer)
+        //     {
+        //         meshRenderer = GetComponent<MeshRenderer>();
+        //     }
+        //     // Position = Vector3.zero;
 
-            transform.localScale = new Vector3(Metrics.DiskRadius * 2, Metrics.DiskHeight, Metrics.DiskRadius * 2);
-        }
+        //     transform.localScale = new Vector3(Metrics.DiskRadius * 2, Metrics.DiskHeight, Metrics.DiskRadius * 2);
+        // }
     }
 }

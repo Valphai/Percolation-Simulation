@@ -11,11 +11,14 @@ namespace Grid
         private Mesh gridMesh;
         public Material material;
     
-        private void Awake()	
+        private void OnValidate()	
         {
-            GetComponent<MeshFilter>().mesh = gridMesh = new Mesh();
-            GetComponent<MeshRenderer>().material = material;
-    		gridMesh.name = "Grid Mesh";
+            if (!gridMesh)
+            {
+                GetComponent<MeshFilter>().mesh = gridMesh = new Mesh();
+                GetComponent<MeshRenderer>().material = material;
+        		gridMesh.name = "Grid Mesh";
+            }
     
     		vertices = new List<Vector3>();
     		triangles = new List<int>();

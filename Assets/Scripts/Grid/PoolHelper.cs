@@ -1,4 +1,3 @@
-using TMPro;
 using UnityEditor;
 using UnityEngine;
 
@@ -6,10 +5,10 @@ namespace Grid
 {
     public class PoolHelper : MonoBehaviour
     {
-    
+        [SerializeField]
         private Disk diskPrefab;
     
-        private void Awake()	
+        private void OnValidate()	
         {
             diskPrefab = AssetDatabase.LoadAssetAtPath<Disk>("Assets/Prefabs/Grid/Disk.prefab");
         }
