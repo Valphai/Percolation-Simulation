@@ -88,7 +88,7 @@ namespace Grid
                 }
             }
             unionFind = null;
-            //Resources.UnloadUnusedAssets();
+            Resources.UnloadUnusedAssets();
         }
         public void CleanBins()
         {
@@ -159,15 +159,16 @@ namespace Grid
         private void CreateBin(int x, int z, int i)
         {
             float diameter = Metrics.DiskRadius * 2;
-            Vector3 position = new Vector3(
+    
+            GridBin bin = bins[i] = Instantiate<GridBin>(binPrefab);
+            bin.transform.SetParent(transform, false);
+            
+            bin.transform.localPosition = new Vector3(
                 x * diameter,
                 Metrics.BinHeight,
                 z * diameter
             );
-    
-            GridBin bin = bins[i] = Instantiate<GridBin>(binPrefab);
-            bin.transform.SetParent(transform, false);
-            bin.transform.localPosition = position;
+
             bin.Coordinates = Coordinates.FromIntCoords(x, z);
 
             bin.Disks = new List<Disk>();

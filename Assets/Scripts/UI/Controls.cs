@@ -27,7 +27,6 @@ namespace UI
                         PoolHelper.ReleaseFromPool, (x) => Destroy(x.gameObject));
                 grid = GridSystem.GridSetup(ref grid, dPool, visualize:true);
                 grid.SetupGrid(Grid.Metrics.SpawnLower, Grid.Metrics.SpawnHigher);
-
             }
         }
         public void DeactivateBins(bool a)
@@ -57,20 +56,9 @@ namespace UI
         }
         public void Visualize()
         {
-            // doneSetup = false;
-            // if (!doneSetup)
-            // {
-            //     dPool = new ObjectPool<Disk>(
-            //         PoolHelper.CreateDisk, PoolHelper.TakeFromPool, PoolHelper.ReleaseFromPool);
-            //     grid = GridSystem.GridSetup(ref grid, dPool, visualize:true);
-            //     doneSetup = true;
-            // }
-            // else
-            // {
             grid.ReleasePools();
             grid.CleanBins();
             grid.SetupGrid(Grid.Metrics.SpawnLower, Grid.Metrics.SpawnHigher);
-            // }
         }
         public void SetL(string text) => L = System.Convert.ToInt32(text);
         public void Setn(string text) => n = System.Convert.ToInt32(text);

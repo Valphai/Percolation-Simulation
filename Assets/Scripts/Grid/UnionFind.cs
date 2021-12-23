@@ -1,3 +1,4 @@
+#define DEBUG_MODE
 using System.Collections.Generic;
 using UnityEngine;
 using VisualDebugging;
@@ -22,8 +23,9 @@ namespace Grid
     
         public UnionFind(int n, bool visuals)
         {
+#if DEBUG_MODE
             VisualDebug.Initialize();
-
+#endif
             visualize = visuals;
             count = n;
             parent = new int[n];
@@ -33,11 +35,11 @@ namespace Grid
 
         public void Union(int p, int q, int L) 
         {
-            
+#if DEBUG_MODE
             VisualDebug.BeginFrame($"Union({p},{q})", true);
             VisualDebug.DrawPoint(Disks[p].Position, Metrics.DiskRadius);
             VisualDebug.DrawPoint(Disks[q].Position, Metrics.DiskRadius);
-
+#endif
             Vector3Int pToRootP;
             Vector3Int qToRootQ;
 
@@ -65,9 +67,9 @@ namespace Grid
 
                     FirstClusterOccured = true;
                     firstClusterN = p;
-
+#if DEBUG_MODE
                     VisualDebug.Save();
-
+#endif
                     if (visualize)
                     {
                         int biggestRoot = Find(p);
@@ -95,13 +97,15 @@ namespace Grid
 
                 Disks[rootP].ToParentDisplacement = PeriodicShiftVector(q, p,
                                                                 qToRootQ, L);
-
+#if DEBUG_MODE
                 VisualDebug.BeginFrame("rootP->rootQ", true);
                 VisualDebug.SetColour(Colours.lightBlue, Colours.veryDarkGrey);
                 VisualDebug.DrawPoint(Disks[rootQ].Position, Metrics.DiskRadius);
                 VisualDebug.DontShowNextElementWhenFrameIsInBackground();
                 VisualDebug.SetColour(Colours.lightGreen, Colours.veryDarkGrey);
-                VisualDebug.DrawLineSegmentWithLabel(Disks[p].Position, Disks[rootQ].Position, Disks[rootP].ToParentDisplacement.ToString());
+                VisualDebug.DrawLineSegmentWithLabel(Disks[p].Position, Disks[rootQ].Position, 
+                                                Disks[rootP].ToParentDisplacement.ToString());
+#endif
             }
             else
             {
@@ -110,13 +114,15 @@ namespace Grid
 
                 Disks[rootQ].ToParentDisplacement = PeriodicShiftVector(p, q,
                                                                 pToRootP, L);
-                                                                
+#if DEBUG_MODE                                                     
                 VisualDebug.BeginFrame("rootQ->rootP", true);
                 VisualDebug.SetColour(Colours.lightBlue, Colours.veryDarkGrey);
                 VisualDebug.DrawPoint(Disks[rootP].Position, Metrics.DiskRadius);
                 VisualDebug.DontShowNextElementWhenFrameIsInBackground();
                 VisualDebug.SetColour(Colours.lightGreen, Colours.veryDarkGrey);
-                VisualDebug.DrawLineSegmentWithLabel(Disks[rootP].Position, Disks[q].Position, Disks[rootQ].ToParentDisplacement.ToString());
+                VisualDebug.DrawLineSegmentWithLabel(Disks[rootP].Position, Disks[q].Position, 
+                                                Disks[rootQ].ToParentDisplacement.ToString());
+#endif
             }
             count--;
             

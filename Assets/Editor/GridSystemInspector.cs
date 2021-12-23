@@ -6,6 +6,7 @@ using UI;
 [CustomEditor(typeof(GridSystem))]
 public class GridSystemInspector : Editor	
 {
+    public int RunEnsembleTimes;
     private Controls controls;
     private GridSystem grid;
     public override void OnInspectorGUI()	
@@ -21,6 +22,10 @@ public class GridSystemInspector : Editor
         if (GUILayout.Button("Visualize"))
         {
             controls.Visualize();
+        }
+        if (GUILayout.Button("Run Ensemble"))
+        {
+            // controls.RunEnsemble();
         }
         
     }
