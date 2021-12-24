@@ -22,7 +22,6 @@ namespace Calculations
         /// </summary>
         /// <returns>total fraction φ of the plane covered by the objects</returns>
         // public static double TotalArea(int n, int L, float a) => 1 - Mathf.Exp(-FillingFactor(n, L, a));
-
         public static double OmegaLeft(double lambda, int k)
         {
             if (k == 0) return 1;

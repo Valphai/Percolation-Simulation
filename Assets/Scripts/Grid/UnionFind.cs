@@ -11,22 +11,19 @@ namespace Grid
         /// <summary>Number of disks needed to create a cluster</summary>
         public int firstClusterN;
         public Disk[] Disks { get; private set; }
-        public bool FirstClusterOccured { get; private set; }//ss
+        public bool FirstClusterOccured { get; private set; }
         public int[] parent { get; private set; }
-        private bool visualize;
-    
         /// <summary> size of each group </summary>
         private int[] size;
 
         /// <summary> number of groups </summary>
         private int count;
     
-        public UnionFind(int n, bool visuals)
+        public UnionFind(int n)
         {
 #if DEBUG_MODE
             VisualDebug.Initialize();
 #endif
-            visualize = visuals;
             count = n;
             parent = new int[n];
             size = new int[n];
@@ -55,35 +52,33 @@ namespace Grid
                 // both directions on the torus.
                 if (System.Math.Abs(pToRootP.x - qToRootQ.x) >= L - 1 ||
                     System.Math.Abs(pToRootP.z - qToRootQ.z) >= L - 1)
+                // if (System.Math.Abs((Disks[p].ToParentDisplacement - qToRootQ).x) >= L - 1 ||
+                //     System.Math.Abs((Disks[p].ToParentDisplacement - qToRootQ).z) >= L - 1 |||
+                //     System.Math.Abs((Disks[q].ToParentDisplacement - pToRootP).x) >= L - 1 ||
+                //     System.Math.Abs((Disks[q].ToParentDisplacement - pToRootP).z) >= L - 1)
                 {
-                    // #region Debug
-                    //     var assembly = Assembly.GetAssembly(typeof(UnityEditor.Editor));
-                    //     var type = assembly.GetType("UnityEditor.LogEntries");
-                    //     var method = type.GetMethod("Clear");
-                    //     method.Invoke(new object(), null);
-                    //     Debug.Log(pToRootP);
-                    //     Debug.Log(qToRootQ);
-                    // #endregion
-
                     FirstClusterOccured = true;
                     firstClusterN = p;
 #if DEBUG_MODE
+                    int biggestRoot = Find(p);
+                    VisualDebug.BeginFrame();
+                    VisualDebug.SetColour(Colours.lightRed);
+                    for (int i = 0; i < firstClusterN; i++)
+                    {
+                        if (Find(i) == biggestRoot)
+                        {
+                            VisualDebug.DrawPoint(Disks[i].Position, Metrics.DiskRadius);
+                        }
+                    }
+                    VisualDebug.SetColour(Colours.lightBlue, Colours.veryDarkGrey);
+                    VisualDebug.DrawPoint(Disks[q].Position, Metrics.DiskRadius);
+                    VisualDebug.SetColour(Colours.lightGreen, Colours.veryDarkGrey);
+                    VisualDebug.DrawPoint(Disks[p].Position, Metrics.DiskRadius);
+                    VisualDebug.SetColour(Colours.white, Colours.veryDarkGrey);
+                    VisualDebug.DrawPoint(Disks[biggestRoot].Position, Metrics.DiskRadius);
+
                     VisualDebug.Save();
 #endif
-                    if (visualize)
-                    {
-                        int biggestRoot = Find(p);
-                        for (int i = 0; i < firstClusterN; i++)
-                        {
-                            if (Find(i) == biggestRoot)
-                            {
-                                Disks[i].Color = Color.red;
-                            }
-                        }
-                        Disks[p].Color = Color.black;
-                        Disks[q].Color = Color.green;
-                        Disks[biggestRoot].Color = Color.cyan;
-                    }
                 }
 
                 return;
@@ -162,7 +157,6 @@ namespace Grid
         public int Find(int p, out Vector3Int v1, int L) 
         {
             v1 = Vector3Int.zero;
-            var debugDistance = new List<Vector3>();
             int startingP = p;
 
             int root = p;
@@ -211,6 +205,11 @@ namespace Grid
 
         public void TickDisk(Disk disk, int i)
         {
+#if DEBUG_MODE
+            VisualDebug.BeginFrame($"{i}", true);
+            VisualDebug.SetColour(Colours.darkGrey, Colours.veryDarkGrey);
+            VisualDebug.DrawPoint(disk.Position, Metrics.DiskRadius);
+#endif
             disk.DiskIndex = i;
             Disks[i] = disk;
 
