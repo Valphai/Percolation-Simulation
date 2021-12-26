@@ -1,4 +1,4 @@
-#define DEBUG_MODE
+//#define DEBUG_MODE
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -26,8 +26,8 @@ namespace Grid
         {
             binPrefab = AssetDatabase.LoadAssetAtPath<GridBin>("Assets/Prefabs/Grid/Bin.prefab");
 
-            CreateBins();
-            SetupGrid(Grid.Metrics.SpawnLower, Grid.Metrics.SpawnHigher);
+            if (!bins[0]) CreateBins();
+            // SetupGrid(Grid.Metrics.SpawnLower, Grid.Metrics.SpawnHigher);
         }
 #if DEBUG_MODE
         private void OnDrawGizmosSelected() 
@@ -65,13 +65,13 @@ namespace Grid
         {
             foreach (GridBin bin in bins)
             {
-                Destroy(bin);//s
+                Destroy(bin);
             }
         }
         public void Run()
         {
-            CleanBins();
             SetupGrid(Grid.Metrics.SpawnLower, Grid.Metrics.SpawnHigher);
+            CleanBins();
         }
         private static GridSystem AssignGrid(int L)
         {
@@ -116,9 +116,18 @@ namespace Grid
             bin.AddDisk(disk, uF, L);
         }
         private GridBin GetBin(Coordinates coords) 
-        {    
+        {
     		int index = coords.x + coords.z * L;
-    		return bins[index];
+            try
+            {
+                return bins[index];
+            }
+            catch (System.IndexOutOfRangeException)
+            {
+                Debug.Log(coords.x);
+                Debug.Log(coords.z);
+                throw;
+            }
     	}
         private void PopulateGrid()
         {
@@ -147,10 +156,8 @@ namespace Grid
             );
 
             bin.Coordinates = Coordinates.FromIntCoords(x, z);
-
-            bin.Disks = new List<Disk>();
-            bin.neighbors = new GridBin[8];
             
+            bin.neighbors = new GridBin[8];
             if (x > 0)
             {
                 bin.SetNeighbor(Direction.W, bins[i - 1]);
@@ -203,47 +210,49 @@ namespace Grid
         /// <param name="N">Number of runs</param>
         /// <param name="L">Plane length</param>
         /// <param name="a">Disk radius</param>
-        public void RunEnsemble(int N, int L, float a)
+        public void RunEnsemble(int N, int L)
         {
-            string path = Path.Combine(Application.persistentDataPath, "nCdfPdf.dat");
+            string path = Path.Combine(Application.persistentDataPath, "data.dat");
 
             SortedDictionary<int, int> timesClusterOccured = new SortedDictionary<int, int>();
-            SortedDictionary<int, int> clusterDistribution = new SortedDictionary<int, int>();
+            // SortedDictionary<int, int> clusterDistribution = new SortedDictionary<int, int>();
 
             for (int i = 0; i < N; i++)
             {
-                SetupGrid(Grid.Metrics.SpawnLower, Grid.Metrics.SpawnHigher);
-
-                // write ur own class is better maybe
+                Run();
 
                 int frstCluster = unionFind.firstClusterN;
                 if (timesClusterOccured.ContainsKey(frstCluster))
                 {
                     timesClusterOccured[frstCluster]++;
-                    clusterDistribution[frstCluster]++;
+                    // clusterDistribution[frstCluster]++;
                 }
                 else
                 {
-                    timesClusterOccured.Add(frstCluster, 1);
-                    clusterDistribution.Add(frstCluster, 1);
+                    timesClusterOccured.Add(frstCluster, 1);//s
+                    // clusterDistribution.Add(frstCluster, 1);
                 }
-                CleanBins();
                 
             }
 
             using (
                var writer = new StreamWriter(File.Open(path, FileMode.Create), Encoding.UTF8, 65536))
             {
+                writer.Write(
+                    "frst_clust_N\tPDF\tR(eta)\tCDF\teta\n"
+                );
                 int cumulativeSum = 0;
+                // key == first cluster
                 foreach (int key in timesClusterOccured.Keys)
                 {
                     cumulativeSum += timesClusterOccured[key];
+                    double eta = Utilities.FillingFactor(key, L, Metrics.DiskRadius);
                     // double P_L = Probabilities.PercolationExistsProbability(cumulativeSum, n);
 
                     // double density = clusterDistribution[key] / (double)n;
 
                     writer.Write(
-                        $"{key}\t{Probabilities.PercolationExistsProbability(cumulativeSum, n)}\t{clusterDistribution[key] / (double)n}\n");
+                        $"{key}\t{Probabilities.PercolationExistsProbability(cumulativeSum, N)}\t{Probabilities.PercolationProbabilityGCE(key, L, Metrics.DiskRadius, eta)}\t{timesClusterOccured[key] / (double)N}\t{eta}\n");
                 }
             }
         }

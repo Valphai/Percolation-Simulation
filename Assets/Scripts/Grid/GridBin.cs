@@ -8,14 +8,17 @@ namespace Grid
     {
         public Coordinates Coordinates;
         public RectTransform UiRect;
-        [SerializeField] 
         public List<Disk> Disks { get; set; }
-        [SerializeField]
-        public GridBin[] neighbors;
+        [SerializeField] public GridBin[] neighbors;
 
+        private void OnValidate()
+        {
+            Disks = new List<Disk>();
+            CleanDisks();
+        }
         public void AddDisk(Disk disk, UnionFind uf, int L)
         {
-            float planeLength = Metrics.DiskRadius * 2 * L;
+            float planeLength = Metrics.Diameter * L;
 
             // check for intersecting disks in the same bin
             for (int i = 0; i < Disks.Count; i++)
@@ -59,7 +62,7 @@ namespace Grid
                         }
                     }
 
-                    if (Vector3.Distance(v2, v1) < 2 * Metrics.DiskRadius)
+                    if (Vector3.Distance(v2, v1) < Metrics.Diameter)
                     {
                         // overlaps
                         uf.Union(disk.DiskIndex, neighbDisk.DiskIndex, L);
@@ -77,7 +80,10 @@ namespace Grid
     		neighbors[(int)direction] = bin;
     		bin.neighbors[(int)direction.Opposite()] = this;
     	}
-        public void CleanDisks() => Disks.Clear();
+        public void CleanDisks()
+        {
+            Disks.Clear();
+        }
     }
 }
 

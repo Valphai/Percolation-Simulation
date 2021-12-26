@@ -40,22 +40,20 @@ namespace Calculations
 
             return exp * (leftPart + rightPart) / omega;
         }
+        /// <param name="n"> n when first cluster occurs</param>
+        /// <returns></returns>
         public static double PercolationProbabilityGCE(
-            double n, double L, float a, 
-            int nWhenClusterAppears, out double eta)
+            int n, float L, float a, double eta)
         {
-            eta = Utilities.FillingFactor(n, L, a);
-
             double lambda = eta * L * L / a;
             double R = Math.Exp(-lambda);
 
             double sum = 0;
-            for (int i = 0; i < nWhenClusterAppears; i++)
+            for (int i = 0; i < n; i++)
             {
                 sum += Math.Pow(lambda, i) / Utilities.Factorial(i) * 
-                    PercolationExistsProbability(i, nWhenClusterAppears);
+                    PercolationExistsProbability(i, n);
             }
-            Debug.Log(sum);
 
             return Math.Exp(-lambda) * sum;
         }

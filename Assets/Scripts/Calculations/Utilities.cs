@@ -7,12 +7,13 @@ namespace Calculations
         /// <summary>
         /// Defined with ρ
         /// </summary>
-        /// <param name="n"> number of elements</param>
-        /// <param name="L"> grid width slash height </param>
         public static double MeanDensity(double n, double L) => n / (L * L);
 
         /// <summary>
         /// Defined with η
+        /// <param name="n"> number of elements</param>
+        /// <param name="L"> grid width slash height </param>
+        /// <param name="a"> disk radius </param>
         /// </summary>
         /// <returns> I think this should be the case: 1.127 ≤ η ≤ 1.12875 </returns>
         public static double FillingFactor(double n, double L, float a) => MeanDensity(n, L) * a;

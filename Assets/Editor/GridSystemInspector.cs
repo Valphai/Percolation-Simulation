@@ -21,7 +21,7 @@ public class GridSystemInspector : Editor
         }
         if (GUILayout.Button("Run Ensemble"))
         {
-            grid.RunEnsemble(grid.N, grid.L, Metrics.DiskRadius);
+            grid.RunEnsemble(grid.N, grid.L);
         }
         
     }

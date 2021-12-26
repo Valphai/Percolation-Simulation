@@ -1,11 +1,11 @@
-#define DEBUG_MODE
-using System.Collections.Generic;
+//#define DEBUG_MODE
 using UnityEngine;
+#if DEBUG_MODE
 using VisualDebugging;
+#endif
 
 namespace Grid
 {
-    [System.Serializable]
     public class UnionFind
     {
         /// <summary>Number of disks needed to create a cluster</summary>
@@ -52,10 +52,6 @@ namespace Grid
                 // both directions on the torus.
                 if (System.Math.Abs(pToRootP.x - qToRootQ.x) >= L - 1 ||
                     System.Math.Abs(pToRootP.z - qToRootQ.z) >= L - 1)
-                // if (System.Math.Abs((Disks[p].ToParentDisplacement - qToRootQ).x) >= L - 1 ||
-                //     System.Math.Abs((Disks[p].ToParentDisplacement - qToRootQ).z) >= L - 1 |||
-                //     System.Math.Abs((Disks[q].ToParentDisplacement - pToRootP).x) >= L - 1 ||
-                //     System.Math.Abs((Disks[q].ToParentDisplacement - pToRootP).z) >= L - 1)
                 {
                     FirstClusterOccured = true;
                     firstClusterN = p;
