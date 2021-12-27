@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace Grid
 {
+    [System.Serializable]
     public struct Coordinates
     {
         public int x { get; private set; }

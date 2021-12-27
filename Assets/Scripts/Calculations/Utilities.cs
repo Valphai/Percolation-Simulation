@@ -23,24 +23,31 @@ namespace Calculations
         /// </summary>
         /// <returns>total fraction φ of the plane covered by the objects</returns>
         // public static double TotalArea(int n, int L, float a) => 1 - Mathf.Exp(-FillingFactor(n, L, a));
-        public static double OmegaLeft(double lambda, int k)
-        {
-            if (k == 0) return 1;
 
-            double n_hat = Math.Floor(lambda);
-            return (n_hat - (k - 1)) / lambda * OmegaLeft(lambda, k - 1);
-        }
-        public static double OmegaRight(double lambda, int k)
+        public static double OmegaLeft(
+            int frstClustIndx, double lambda, 
+            double n_hat, int k)
         {
-            if (k == 0) return 1;
+            if (k == 0) return 0;
+            if (k == frstClustIndx) return 1;
 
-            double n_hat = Math.Floor(lambda);
-            return lambda / (n_hat + k) * OmegaRight(lambda, k + 1);
+            return (n_hat - (k - 1)) / lambda * OmegaLeft(
+                            frstClustIndx, lambda, n_hat, k - 1);
         }
-        public static float Factorial(int n)
+        public static double OmegaRight(
+            int frstClustIndx, double lambda, 
+            double n_hat, int k, int len)
+        {
+            if (k == len) return 0;
+            if (k == frstClustIndx) return 1;
+
+            return lambda / (n_hat + k) * OmegaRight(
+                        frstClustIndx, lambda, n_hat, k + 1, len);
+        }
+        public static int Factorial(int n)
         {
             int count = n;
-            float result = 1;
+            int result = 1;
     
             while (count >= 1)
             {

@@ -1,4 +1,4 @@
-//#define DEBUG_MODE
+// #define DEBUG_MODE
 using UnityEngine;
 #if DEBUG_MODE
 using VisualDebugging;
@@ -36,6 +36,7 @@ namespace Grid
             VisualDebug.BeginFrame($"Union({p},{q})", true);
             VisualDebug.DrawPoint(Disks[p].Position, Metrics.DiskRadius);
             VisualDebug.DrawPoint(Disks[q].Position, Metrics.DiskRadius);
+            // if (p == Disks.Length - 1) VisualDebug.Save();
 #endif
             Vector3Int pToRootP;
             Vector3Int qToRootQ;
@@ -50,8 +51,10 @@ namespace Grid
                 // if displacement vec differ by +- L => 
                 // cluster has a nontrivial winding number around one or
                 // both directions on the torus.
-                if (System.Math.Abs(pToRootP.x - qToRootQ.x) >= L - 1 ||
-                    System.Math.Abs(pToRootP.z - qToRootQ.z) >= L - 1)
+                if (pToRootP.x - qToRootQ.x >= L - 1 ||
+                    qToRootQ.x - pToRootP.x >= L - 1 ||
+                    pToRootP.z - qToRootQ.z >= L - 1 ||
+                    qToRootQ.z - pToRootP.z >= L - 1)
                 {
                     FirstClusterOccured = true;
                     firstClusterN = p;

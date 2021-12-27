@@ -6,8 +6,7 @@ namespace Grid
     [System.Serializable]
     public class GridBin : MonoBehaviour
     {
-        public Coordinates Coordinates;
-        public RectTransform UiRect;
+        [SerializeField] public Coordinates Coordinates;
         public List<Disk> Disks { get; set; }
         [SerializeField] public GridBin[] neighbors;
 
@@ -20,15 +19,22 @@ namespace Grid
         {
             float planeLength = Metrics.Diameter * L;
 
+            Vector3 v1 = disk.Position;
+            Vector3Int thisBinPos = Coordinates.IntVectorPositon();
+            
             // check for intersecting disks in the same bin
             for (int i = 0; i < Disks.Count; i++)
             {
-                uf.Union(disk.DiskIndex, Disks[i].DiskIndex, L);
+                Vector3 v2 = Disks[i].Position;
+
+                // overlaps
+                if (Vector3.Distance(v2, v1) < Metrics.Diameter)
+                {
+                    uf.Union(disk.DiskIndex, Disks[i].DiskIndex, L);
+                }
             }
 
             Disks.Add(disk);
-            Vector3 v1 = disk.Position;
-            Vector3Int thisBinPos = Coordinates.IntVectorPositon();
 
             // go through all neigbors
             foreach (GridBin neighBin in neighbors)
@@ -61,10 +67,9 @@ namespace Grid
                             v2 -= Vector3.forward * planeLength;
                         }
                     }
-
+                    // overlaps
                     if (Vector3.Distance(v2, v1) < Metrics.Diameter)
                     {
-                        // overlaps
                         uf.Union(disk.DiskIndex, neighbDisk.DiskIndex, L);
                     }
                 }

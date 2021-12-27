@@ -1,11 +1,11 @@
-//#define DEBUG_MODE
+// #define DEBUG_MODE
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
 using System.Text;
 using Calculations;
-
+using System.Linq;
 
 namespace Grid
 {
@@ -26,7 +26,7 @@ namespace Grid
         {
             binPrefab = AssetDatabase.LoadAssetAtPath<GridBin>("Assets/Prefabs/Grid/Bin.prefab");
 
-            if (!bins[0]) CreateBins();
+            if (bins.Length == 0 || !bins[0]) CreateBins();
             // SetupGrid(Grid.Metrics.SpawnLower, Grid.Metrics.SpawnHigher);
         }
 #if DEBUG_MODE
@@ -139,8 +139,9 @@ namespace Grid
             {
                 if (unionFind.FirstClusterOccured) return;
 
-                float x = UnityEngine.Random.Range(-a, L * diamater - a);
-                float z = UnityEngine.Random.Range(-a, L * diamater - a);
+                // unity's random bounds both inclusive causing 1 in ten million bug
+                float x = Random.Range(-a, L * diamater - a - .001f);
+                float z = Random.Range(-a, L * diamater - a - .001f);
                 AddDisk(x, z, i, unionFind);
             }
         }
@@ -212,10 +213,10 @@ namespace Grid
         /// <param name="a">Disk radius</param>
         public void RunEnsemble(int N, int L)
         {
-            string path = Path.Combine(Application.persistentDataPath, "data.dat");
+            string path = Path.Combine(Application.persistentDataPath, $"CDF_L={L}_a={Metrics.DiskRadius}.dat");
+            string path2 = Path.Combine(Application.persistentDataPath, $"R_L={L}_a={Metrics.DiskRadius}.dat");
 
             SortedDictionary<int, int> timesClusterOccured = new SortedDictionary<int, int>();
-            // SortedDictionary<int, int> clusterDistribution = new SortedDictionary<int, int>();
 
             for (int i = 0; i < N; i++)
             {
@@ -225,34 +226,50 @@ namespace Grid
                 if (timesClusterOccured.ContainsKey(frstCluster))
                 {
                     timesClusterOccured[frstCluster]++;
-                    // clusterDistribution[frstCluster]++;
                 }
                 else
                 {
-                    timesClusterOccured.Add(frstCluster, 1);//s
-                    // clusterDistribution.Add(frstCluster, 1);
+                    timesClusterOccured.Add(frstCluster, 1);
                 }
                 
             }
 
+            int[] keys = timesClusterOccured.Keys.ToArray();
+            int[] vals = timesClusterOccured.Values.ToArray();
+            int h = timesClusterOccured.Keys.Max();
+            int m = timesClusterOccured.Keys.Min();
             using (
                var writer = new StreamWriter(File.Open(path, FileMode.Create), Encoding.UTF8, 65536))
             {
-                writer.Write(
-                    "frst_clust_N\tPDF\tR(eta)\tCDF\teta\n"
+                writer.Write( // non cumulative CDF, 
+                    "n\tCDF\n"
                 );
-                int cumulativeSum = 0;
+
                 // key == first cluster
                 foreach (int key in timesClusterOccured.Keys)
                 {
-                    cumulativeSum += timesClusterOccured[key];
                     double eta = Utilities.FillingFactor(key, L, Metrics.DiskRadius);
-                    // double P_L = Probabilities.PercolationExistsProbability(cumulativeSum, n);
 
-                    // double density = clusterDistribution[key] / (double)n;
+                    // 1 strip PercolationExistsProbability to make it non cumultive
+                    // 2 record all 2nd terms from poisson
+                    // 3 multiply 1 * 2 by rows up to wanted eta and multiply the product by e^-lambda
+                    writer.Write(
+                        $"{key}\t{Probabilities.PercolationExistsProbability(timesClusterOccured[key], N)}\n");
+                }
+            }
+            using (
+               var writer = new StreamWriter(File.Open(path2, FileMode.Create), Encoding.UTF8, 65536))
+            {
+                foreach (int key in timesClusterOccured.Keys)
+                {
+                    double eta = Utilities.FillingFactor(key, L, Metrics.DiskRadius);
+
+                    double R = Probabilities.PercolationProbabilityGCE(
+                        eta, L, Metrics.DiskRadius, key, keys, vals);
 
                     writer.Write(
-                        $"{key}\t{Probabilities.PercolationExistsProbability(cumulativeSum, N)}\t{Probabilities.PercolationProbabilityGCE(key, L, Metrics.DiskRadius, eta)}\t{timesClusterOccured[key] / (double)N}\t{eta}\n");
+                        $"{key}\t{R}\t{eta}\n"
+                    );
                 }
             }
         }

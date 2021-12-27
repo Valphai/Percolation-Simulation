@@ -9,7 +9,7 @@ public class GridSystemInspector : Editor
     private GridSystem grid;
     private void OnEnable()	
     {
-        grid = (GridSystem)target;
+        grid = target as GridSystem;
     }
     public override void OnInspectorGUI()	
     {

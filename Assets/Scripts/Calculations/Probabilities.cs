@@ -5,57 +5,49 @@ namespace Calculations
 {
     public static class Probabilities
     {
-        // public static int NumOfTrials;
 
+        /// <summary> w_n ∝ λ^n/n! </summary>
         /// <param name="h">highest n when cluster appeared (where P_L(a,n) == 1)</param>
         /// <param name="m">smallest n when cluster appeared (where P_L(a,n) != 0)</param>
         /// <returns></returns>
         public static double PercolationProbabilityGCE(
-            double n, double L, float a, 
-            int nWhenClusterAppears, int h, int m)
+            double eta, double L, float a, 
+            int frstClust, int[] timesClustOccured, int[] nCdf)
         {
-
-            double eta = Utilities.FillingFactor(n, L, a);
             double lambda = eta * L * L / a;
-
             double exp = Math.Exp(-lambda);
+            double n_hat = Math.Floor(lambda);
+
+            int i = Array.IndexOf(timesClustOccured, frstClust);
+
             double omega = 0; // normalization factor
 
             double leftPart = 0;
-            for (int k = 0; k < h; k++)
+            for (int k = i; k > 0; k--)
             {
-                double lftOmega = Utilities.OmegaLeft(lambda, k);
+                double lftOmega = Utilities.OmegaLeft(i, lambda, n_hat, k);
                 omega += lftOmega;
-                leftPart += lftOmega * PercolationExistsProbability(
-                                                k, nWhenClusterAppears);
+                leftPart += lftOmega * nCdf[k];
             }
             double rightPart = 0;
-            for (int k = 0; k < m; k++)
+            for (int k = i; k < nCdf.Length; k++)
             {
-                double rtOmega = Utilities.OmegaRight(lambda, k);
+                double rtOmega = Utilities.OmegaRight(i, lambda, n_hat, k, nCdf.Length);
                 omega += rtOmega;
-                rightPart += rtOmega * PercolationExistsProbability(
-                                                k, nWhenClusterAppears);
+                rightPart += rtOmega * nCdf[k];
             }
 
             return exp * (leftPart + rightPart) / omega;
         }
+        /// <summary> Poisson distribution for a given n term under the sum </summary>
         /// <param name="n"> n when first cluster occurs</param>
+        /// <param name="N"> times ensemble ran</param>
         /// <returns></returns>
-        public static double PercolationProbabilityGCE(
+        public static double Poisson2ndTerm(
             int n, float L, float a, double eta)
         {
             double lambda = eta * L * L / a;
-            double R = Math.Exp(-lambda);
-
-            double sum = 0;
-            for (int i = 0; i < n; i++)
-            {
-                sum += Math.Pow(lambda, i) / Utilities.Factorial(i) * 
-                    PercolationExistsProbability(i, n);
-            }
-
-            return Math.Exp(-lambda) * sum;
+            return Math.Pow(lambda, n) / Utilities.Factorial(n);
         }
 
         /// <summary>
