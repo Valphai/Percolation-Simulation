@@ -33,3 +33,8 @@ THEN SUM THESE BOYS UP IN (3)
 
 Problem now is no periodic boundaries, when summing path 
 cut part of the disk at the edge should be on the opposite side of the plane
+
+i think we need to get the weights & cdf both non cumulative to a file
+multiply cumulative sums (to n considered) by exp and thats R for a given n
+
+once i get w's i need to divide each by cumulative sum of W multiplied by exp

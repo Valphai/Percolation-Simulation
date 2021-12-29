@@ -24,26 +24,6 @@ namespace Calculations
         /// <returns>total fraction φ of the plane covered by the objects</returns>
         // public static double TotalArea(int n, int L, float a) => 1 - Mathf.Exp(-FillingFactor(n, L, a));
 
-        public static double OmegaLeft(
-            int frstClustIndx, double lambda, 
-            double n_hat, int k)
-        {
-            if (k == 0) return 0;
-            if (k == frstClustIndx) return 1;
-
-            return (n_hat - (k - 1)) / lambda * OmegaLeft(
-                            frstClustIndx, lambda, n_hat, k - 1);
-        }
-        public static double OmegaRight(
-            int frstClustIndx, double lambda, 
-            double n_hat, int k, int len)
-        {
-            if (k == len) return 0;
-            if (k == frstClustIndx) return 1;
-
-            return lambda / (n_hat + k) * OmegaRight(
-                        frstClustIndx, lambda, n_hat, k + 1, len);
-        }
         public static int Factorial(int n)
         {
             int count = n;
@@ -55,6 +35,43 @@ namespace Calculations
                 count--;
             }
             return result;
+        }
+        /// <summary> w_n ∝ λ^n/n! </summary>
+        /// <param name="first"> first n entry in PDF </param>
+        /// <returns> Poisson weights for a given entry </returns>
+        public static double PoissonWeights(
+            int first, double eta, double L, 
+            float a, int frstClust)
+        {
+            double lambda = eta * L * L / a;
+
+            // peak index
+            int n_hat = (int)Math.Floor(lambda);
+
+            double wR = 0;
+            double wL = 0;
+            double lftW = Utilities.W_Nleft(lambda, ref wR, n_hat, n_hat);
+            double rtW = Utilities.W_Nright(lambda, ref wL, n_hat, n_hat + 1);
+
+            return (lftW + rtW) / (wR + wL);
+        }
+        private static double W_Nleft(
+            double lambda, ref double wL,
+            double n_hat, int k)
+        {
+            if (k == 0) return 1;
+
+            wL = W_Nleft(lambda, ref wL, n_hat, k - 1);
+            return (n_hat - (k - 1)) / lambda * wL;
+        }
+        private static double W_Nright(
+            double lambda, ref double wR, 
+            double n_hat, int k)
+        {
+            if (k == 0) return 1;
+            
+            wR = W_Nright(lambda, ref wR, n_hat, k - 1);
+            return lambda / (n_hat + k) * wR;
         }
     }
 }

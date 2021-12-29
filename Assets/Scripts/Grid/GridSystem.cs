@@ -235,26 +235,24 @@ namespace Grid
             }
 
             int[] keys = timesClusterOccured.Keys.ToArray();
-            int[] vals = timesClusterOccured.Values.ToArray();
-            int h = timesClusterOccured.Keys.Max();
-            int m = timesClusterOccured.Keys.Min();
+            int first = timesClusterOccured.Keys.Min();
             using (
                var writer = new StreamWriter(File.Open(path, FileMode.Create), Encoding.UTF8, 65536))
             {
-                writer.Write( // non cumulative CDF, 
-                    "n\tCDF\n"
+                writer.Write( // non cumulative CDF == PDF, 
+                    "n\tPDF\n"
                 );
-
                 // key == first cluster
                 foreach (int key in timesClusterOccured.Keys)
                 {
                     double eta = Utilities.FillingFactor(key, L, Metrics.DiskRadius);
-
+                    double P_L = Probabilities.PercolationExistsProbability(timesClusterOccured[key], N); // non cumulative
                     // 1 strip PercolationExistsProbability to make it non cumultive
                     // 2 record all 2nd terms from poisson
                     // 3 multiply 1 * 2 by rows up to wanted eta and multiply the product by e^-lambda
                     writer.Write(
-                        $"{key}\t{Probabilities.PercolationExistsProbability(timesClusterOccured[key], N)}\n");
+                        $"{key}\t{P_L}\n"
+                    );
                 }
             }
             using (
@@ -264,11 +262,11 @@ namespace Grid
                 {
                     double eta = Utilities.FillingFactor(key, L, Metrics.DiskRadius);
 
-                    double R = Probabilities.PercolationProbabilityGCE(
-                        eta, L, Metrics.DiskRadius, key, keys, vals);
+                    double w = Utilities.PoissonWeights(
+                        first, eta, L, Metrics.DiskRadius, key);
 
                     writer.Write(
-                        $"{key}\t{R}\t{eta}\n"
+                        $"{key}\t{w}\t{eta}\n"
                     );
                 }
             }
