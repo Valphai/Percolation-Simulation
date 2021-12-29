@@ -1,4 +1,4 @@
-// #define DEBUG_MODE
+#define DEBUG_MODE
 using UnityEngine;
 #if DEBUG_MODE
 using VisualDebugging;

@@ -1,4 +1,4 @@
-// #define DEBUG_MODE
+#define DEBUG_MODE
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -213,7 +213,7 @@ namespace Grid
         /// <param name="a">Disk radius</param>
         public void RunEnsemble(int N, int L)
         {
-            string path = Path.Combine(Application.persistentDataPath, $"CDF_L={L}_a={Metrics.DiskRadius}.dat");
+            string path = Path.Combine(Application.persistentDataPath, $"PDF_L={L}_a={Metrics.DiskRadius}.dat");
             string path2 = Path.Combine(Application.persistentDataPath, $"R_L={L}_a={Metrics.DiskRadius}.dat");
 
             SortedDictionary<int, int> timesClusterOccured = new SortedDictionary<int, int>();
@@ -223,30 +223,32 @@ namespace Grid
                 Run();
 
                 int frstCluster = unionFind.firstClusterN;
-                if (timesClusterOccured.ContainsKey(frstCluster))
+                if (frstCluster != 0)
                 {
-                    timesClusterOccured[frstCluster]++;
-                }
-                else
-                {
-                    timesClusterOccured.Add(frstCluster, 1);
+                    if (timesClusterOccured.ContainsKey(frstCluster))
+                        timesClusterOccured[frstCluster]++;
+                    else
+                        timesClusterOccured.Add(frstCluster, 1);
                 }
                 
             }
 
             int[] keys = timesClusterOccured.Keys.ToArray();
-            int first = timesClusterOccured.Keys.Min();
+            int first = timesClusterOccured.Keys.First();
+            double[] PDF = new double[keys.Length]; 
             using (
                var writer = new StreamWriter(File.Open(path, FileMode.Create), Encoding.UTF8, 65536))
             {
                 writer.Write( // non cumulative CDF == PDF, 
                     "n\tPDF\n"
                 );
+                int i = 0;
                 // key == first cluster
                 foreach (int key in timesClusterOccured.Keys)
                 {
                     double eta = Utilities.FillingFactor(key, L, Metrics.DiskRadius);
                     double P_L = Probabilities.PercolationExistsProbability(timesClusterOccured[key], N); // non cumulative
+                    PDF[i++] = P_L;
                     // 1 strip PercolationExistsProbability to make it non cumultive
                     // 2 record all 2nd terms from poisson
                     // 3 multiply 1 * 2 by rows up to wanted eta and multiply the product by e^-lambda
@@ -263,7 +265,7 @@ namespace Grid
                     double eta = Utilities.FillingFactor(key, L, Metrics.DiskRadius);
 
                     double w = Utilities.PoissonWeights(
-                        first, eta, L, Metrics.DiskRadius, key);
+                        first, eta, L, Metrics.DiskRadius, PDF);
 
                     writer.Write(
                         $"{key}\t{w}\t{eta}\n"

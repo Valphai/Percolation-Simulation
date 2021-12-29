@@ -41,37 +41,38 @@ namespace Calculations
         /// <returns> Poisson weights for a given entry </returns>
         public static double PoissonWeights(
             int first, double eta, double L, 
-            float a, int frstClust)
+            float a, double[] pdf)
         {
+            double result = 0;
+            double weight = 1;
+            double weightSum = 0;
             double lambda = eta * L * L / a;
 
             // peak index
-            int n_hat = (int)Math.Floor(lambda);
+            int nHat = (int)Math.Floor(lambda);
 
-            double wR = 0;
-            double wL = 0;
-            double lftW = Utilities.W_Nleft(lambda, ref wR, n_hat, n_hat);
-            double rtW = Utilities.W_Nright(lambda, ref wL, n_hat, n_hat + 1);
+            // left
+            for (int i = nHat; i >= first; i--)
+            {
+                if (i - first < pdf.Length)
+                {
+                    result += weight * pdf[i - first];
+                }
+                weightSum += weight;
+                weight *= i / lambda;
+            }
 
-            return (lftW + rtW) / (wR + wL);
-        }
-        private static double W_Nleft(
-            double lambda, ref double wL,
-            double n_hat, int k)
-        {
-            if (k == 0) return 1;
-
-            wL = W_Nleft(lambda, ref wL, n_hat, k - 1);
-            return (n_hat - (k - 1)) / lambda * wL;
-        }
-        private static double W_Nright(
-            double lambda, ref double wR, 
-            double n_hat, int k)
-        {
-            if (k == 0) return 1;
-            
-            wR = W_Nright(lambda, ref wR, n_hat, k - 1);
-            return lambda / (n_hat + k) * wR;
+            // right
+            weight = 1.0;
+            for (int i = nHat + 1; i < first + pdf.Length; i++)
+            {
+                weight *= lambda / i;
+                double value = (i - first < pdf.Length) ? pdf[i - first] : 1d;
+                result += weight * value;
+                weightSum += weight;
+            }
+            result /= weightSum;
+            return result;
         }
     }
 }
