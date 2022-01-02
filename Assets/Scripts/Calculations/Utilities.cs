@@ -36,12 +36,12 @@ namespace Calculations
             }
             return result;
         }
-        /// <summary> w_n ∝ λ^n/n! </summary>
-        /// <param name="first"> first n entry in PDF </param>
-        /// <returns> Poisson weights for a given entry </returns>
-        public static double PoissonWeights(
+        /// <param name="first"> first n entry in CDF </param>
+        /// <param name="vals"> CDF </param>
+        /// <returns> Poisson weights convolved with P_L </returns>
+        public static double R_L(
             int first, double eta, double L, 
-            float a, double[] pdf)
+            float a, double[] vals)
         {
             double result = 0;
             double weight = 1;
@@ -54,20 +54,20 @@ namespace Calculations
             // left
             for (int i = nHat; i >= first; i--)
             {
-                if (i - first < pdf.Length)
+                if (i - first < vals.Length)
                 {
-                    result += weight * pdf[i - first];
+                    result += weight * vals[i - first];
                 }
                 weightSum += weight;
                 weight *= i / lambda;
             }
 
             // right
-            weight = 1.0;
-            for (int i = nHat + 1; i < first + pdf.Length; i++)
+            weight = 1d;
+            for (int i = nHat + 1; i < first + vals.Length; i++)
             {
                 weight *= lambda / i;
-                double value = (i - first < pdf.Length) ? pdf[i - first] : 1d;
+                double value = (i - first < vals.Length) ? vals[i - first] : 1d;
                 result += weight * value;
                 weightSum += weight;
             }

@@ -215,23 +215,68 @@ namespace Grid
                 }
             }
         }
+        private SortedDictionary<int, double> Load(string path) 
+        {
+            var pdf = new SortedDictionary<int, double>();
+
+            using (
+                StreamReader reader =
+                    new StreamReader(File.Open(path, FileMode.Open))
+            )
+            {
+                string line = System.String.Empty;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    line.Split("\t", 2);
+                    pdf[(int)line[0]] = (double)line[1];
+                }
+
+                // denormalize
+                foreach (int n in pdf.Keys)
+                {
+                    pdf[n] *= pdf.Count;
+                }
+            }
+            
+            return pdf;
+		}
+        private double[] LoadR(string path) 
+        {
+            var R = new List<double>();
+
+            using (
+                StreamReader reader =
+                    new StreamReader(File.Open(path, FileMode.Open))
+            )
+            {
+                string line = System.String.Empty;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    line.Split("\t", 3);
+                    R.Add((double)line[1]);
+                }
+
+                return R.ToArray();
+            }
+		}
         /// <param name="N">Number of runs</param>
         /// <param name="L">Plane length</param>
         /// <param name="a">Disk radius</param>
         /* 
-            this method needs to:
             1. Read data from previous runs (PDF),
-            2. Append data from current run (PDF) (while changing existing entries),
-            4. Normalize CDF
-            5. ReWrite CDF to file
+            2. Denormalize
+            3. Rewrite data including from current run (PDF),
+            4. Normalize PDF
+            5. Read data from previous runs (Rpdf),
+            6. Denormalize
+            7. Get new Rpdf
+            8. ReWrite Rpdf to file
         */
         public void RunEnsemble(int N, int L)
         {
-            string path = Path.Combine(Application.persistentDataPath, $"PDF_L={L}_a={Metrics.DiskRadius}.dat");
-            string path2 = Path.Combine(Application.persistentDataPath, $"R_L={L}_a={Metrics.DiskRadius}.dat");
+            string pdfPath = Path.Combine(Application.persistentDataPath, $"PDF_L={L}_a={Metrics.DiskRadius}.dat");
+            string RpdfPath = Path.Combine(Application.persistentDataPath, $"Rpdf={L}_a={Metrics.DiskRadius}.dat");
             
-            // 1. Read data from previous runs (PDF),
-            // 2. Append data from current run (PDF) (while changing existing entries),
             SortedDictionary<int, int> timesClusterOccured = new SortedDictionary<int, int>();
 
             for (int i = 0; i < N; i++)
@@ -249,43 +294,55 @@ namespace Grid
                 unionFind = null;
                 
             }
-            // 4. Normalize CDF
-            // 5. ReWrite CDF to file
-            int[] keys = timesClusterOccured.Keys.ToArray();
-            int first = timesClusterOccured.Keys.First();
-            double[] PDF = new double[keys.Length]; 
+
+            // 1. Read data from previous runs (PDF),
+            // 2. Denormalize
+            var pdf = Load(pdfPath);
+            double[] cdf = new double[pdf.Count];
+
             using (
-               var writer = new StreamWriter(File.Open(path, FileMode.Create), Encoding.UTF8, 65536))
+                var writer = 
+                    new StreamWriter(File.Open(pdfPath, FileMode.Create), Encoding.UTF8, 65536))
             {
-                writer.Write( // non cumulative CDF == PDF, 
-                    "n\tPDF\n"
-                );
-                int i = 0;
-                // key == first cluster
-                foreach (int key in timesClusterOccured.Keys)
+                // 3. Rewrite data including from current run (PDF),
+                foreach (int n in timesClusterOccured.Keys)
                 {
-                    double P_L = Probabilities.PercolationExistsProbability(timesClusterOccured[key], N); // non cumulative
-                    PDF[i++] = P_L;
-                    // 1 strip PercolationExistsProbability to make it non cumultive
-                    // 2 record all 2nd terms from poisson
-                    // 3 multiply 1 * 2 by rows up to wanted eta and multiply the product by e^-lambda
+                    pdf[n]++;
+                }
+                
+                int i = 0;
+                // 4. Normalize PDF & get CDF
+                foreach (int n in pdf.Keys)
+                {
+                    pdf[n] /= pdf.Count;
+                    cdf[i++] = pdf[n];
+                    
                     writer.Write(
-                        $"{key}\t{P_L}\n"
+                        $"{n}\t{pdf[n]}\n"
                     );
                 }
             }
+
+            // 5. Read data from previous runs (Rpdf),
+            // 6. Denormalize?
+            double[] Rpdf = LoadR(RpdfPath);
+
+            int first = pdf.Keys.First();
             using (
-               var writer = new StreamWriter(File.Open(path2, FileMode.Create), Encoding.UTF8, 65536))
+                var writer = 
+                    new StreamWriter(File.Open(RpdfPath, FileMode.Create), Encoding.UTF8, 65536))
             {
-                foreach (int key in timesClusterOccured.Keys)
+                foreach (int n in pdf.Keys)
                 {
-                    double eta = Utilities.FillingFactor(key, L, Metrics.DiskRadius);
+                    double eta = Utilities.FillingFactor(n, L, Metrics.DiskRadius);
 
-                    double w = Utilities.PoissonWeights(
-                        first, eta, L, Metrics.DiskRadius, PDF);
+                    // 7. Get new Rpdf
+                    double R = Utilities.R_L(
+                        first, eta, L, Metrics.DiskRadius, cdf);
 
+                    // 8. ReWrite Rpdf to file
                     writer.Write(
-                        $"{key}\t{w}\t{eta}\n"
+                        $"{n}\t{R}\t{eta}\n"
                     );
                 }
             }
