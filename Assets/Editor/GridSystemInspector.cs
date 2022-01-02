@@ -19,6 +19,10 @@ public class GridSystemInspector : Editor
         {
             grid.Run();
         }
+        if (GUILayout.Button("Refresh Bins"))
+        {
+            grid.RefreshBins();
+        }
         if (GUILayout.Button("Run Ensemble"))
         {
             grid.RunEnsemble(grid.N, grid.L);

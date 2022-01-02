@@ -3,14 +3,14 @@ using UnityEngine;
 
 namespace Grid
 {
-    [System.Serializable]
+    [System.Serializable, ExecuteInEditMode]
     public class GridBin : MonoBehaviour
     {
         [SerializeField] public Coordinates Coordinates;
         public List<Disk> Disks { get; set; }
         [SerializeField] public GridBin[] neighbors;
 
-        private void OnValidate()
+        private void OnEnable()
         {
             Disks = new List<Disk>();
             CleanDisks();

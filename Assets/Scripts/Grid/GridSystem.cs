@@ -1,4 +1,4 @@
-#define DEBUG_MODE
+// #define DEBUG_MODE
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -27,7 +27,6 @@ namespace Grid
             binPrefab = AssetDatabase.LoadAssetAtPath<GridBin>("Assets/Prefabs/Grid/Bin.prefab");
 
             if (bins.Length == 0 || !bins[0]) CreateBins();
-            // SetupGrid(Grid.Metrics.SpawnLower, Grid.Metrics.SpawnHigher);
         }
 #if DEBUG_MODE
         private void OnDrawGizmosSelected() 
@@ -73,17 +72,13 @@ namespace Grid
             SetupGrid(Grid.Metrics.SpawnLower, Grid.Metrics.SpawnHigher);
             CleanBins();
         }
-        private static GridSystem AssignGrid(int L)
+        public void RefreshBins()
         {
-            GameObject g = new GameObject();
-            g.transform.position = Vector3.zero;
-
-            g.AddComponent(typeof(GridSystem));
-            GridSystem grid = g.GetComponent<GridSystem>();
-
-            grid.L = L;
-
-            return grid;
+            foreach (GridBin bin in bins)
+            {
+                DestroyImmediate(bin.gameObject);
+            }
+            CreateBins();
         }
         private void CreateBins()
         {
@@ -96,6 +91,18 @@ namespace Grid
                     CreateBin(x, z, i++);
                 }
             }
+        }
+        private static GridSystem AssignGrid(int L)
+        {
+            GameObject g = new GameObject();
+            g.transform.position = Vector3.zero;
+
+            g.AddComponent(typeof(GridSystem));
+            GridSystem grid = g.GetComponent<GridSystem>();
+
+            grid.L = L;
+
+            return grid;
         }
         private void AddDisk(float x, float z, int i, UnionFind uF)
         {
@@ -133,7 +140,7 @@ namespace Grid
         {
             unionFind = new UnionFind(n);
             float a = Metrics.DiskRadius;
-            float diamater = a * 2;
+            float diamater = Metrics.Diameter;
            
             for (int i = 0; i < n; i++)
             {
@@ -211,11 +218,20 @@ namespace Grid
         /// <param name="N">Number of runs</param>
         /// <param name="L">Plane length</param>
         /// <param name="a">Disk radius</param>
+        /* 
+            this method needs to:
+            1. Read data from previous runs (PDF),
+            2. Append data from current run (PDF) (while changing existing entries),
+            4. Normalize CDF
+            5. ReWrite CDF to file
+        */
         public void RunEnsemble(int N, int L)
         {
             string path = Path.Combine(Application.persistentDataPath, $"PDF_L={L}_a={Metrics.DiskRadius}.dat");
             string path2 = Path.Combine(Application.persistentDataPath, $"R_L={L}_a={Metrics.DiskRadius}.dat");
-
+            
+            // 1. Read data from previous runs (PDF),
+            // 2. Append data from current run (PDF) (while changing existing entries),
             SortedDictionary<int, int> timesClusterOccured = new SortedDictionary<int, int>();
 
             for (int i = 0; i < N; i++)
@@ -230,9 +246,11 @@ namespace Grid
                     else
                         timesClusterOccured.Add(frstCluster, 1);
                 }
+                unionFind = null;
                 
             }
-
+            // 4. Normalize CDF
+            // 5. ReWrite CDF to file
             int[] keys = timesClusterOccured.Keys.ToArray();
             int first = timesClusterOccured.Keys.First();
             double[] PDF = new double[keys.Length]; 
@@ -246,7 +264,6 @@ namespace Grid
                 // key == first cluster
                 foreach (int key in timesClusterOccured.Keys)
                 {
-                    double eta = Utilities.FillingFactor(key, L, Metrics.DiskRadius);
                     double P_L = Probabilities.PercolationExistsProbability(timesClusterOccured[key], N); // non cumulative
                     PDF[i++] = P_L;
                     // 1 strip PercolationExistsProbability to make it non cumultive
