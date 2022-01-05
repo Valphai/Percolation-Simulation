@@ -1,4 +1,5 @@
 // #define DEBUG_MODE
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -129,7 +130,7 @@ namespace Grid
             {
                 return bins[index];
             }
-            catch (System.IndexOutOfRangeException)
+            catch (IndexOutOfRangeException)
             {
                 Debug.Log(coords.x);
                 Debug.Log(coords.z);
@@ -147,8 +148,8 @@ namespace Grid
                 if (unionFind.FirstClusterOccured) return;
 
                 // unity's random bounds both inclusive causing 1 in ten million bug
-                float x = Random.Range(-a, L * diamater - a - .001f);
-                float z = Random.Range(-a, L * diamater - a - .001f);
+                float x = UnityEngine.Random.Range(-a, L * diamater - a - .001f);
+                float z = UnityEngine.Random.Range(-a, L * diamater - a - .001f);
                 AddDisk(x, z, i, unionFind);
             }
         }
@@ -219,45 +220,33 @@ namespace Grid
         {
             var pdf = new SortedDictionary<int, double>();
 
-            using (
-                StreamReader reader =
-                    new StreamReader(File.Open(path, FileMode.Open))
-            )
+            try
             {
-                string line = System.String.Empty;
-                while ((line = reader.ReadLine()) != null)
+                using (
+                    StreamReader reader =
+                        new StreamReader(File.Open(path, FileMode.Open))
+                )
                 {
-                    line.Split("\t", 2);
-                    pdf[(int)line[0]] = (double)line[1];
+                    string line = String.Empty;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        string[] subs = line.Split(' ', '\t');
+                        pdf.Add(Convert.ToInt32(subs[0]), Convert.ToDouble(subs[1]));
+                    }
+    
+                    // denormalize
+                    foreach (int n in pdf.Keys.ToList())
+                    {
+                        pdf[n] *= pdf.Count;
+                    }
                 }
-
-                // denormalize
-                foreach (int n in pdf.Keys)
-                {
-                    pdf[n] *= pdf.Count;
-                }
+            }
+            catch (FileNotFoundException)
+            {
+                return pdf;
             }
             
             return pdf;
-		}
-        private double[] LoadR(string path) 
-        {
-            var R = new List<double>();
-
-            using (
-                StreamReader reader =
-                    new StreamReader(File.Open(path, FileMode.Open))
-            )
-            {
-                string line = System.String.Empty;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    line.Split("\t", 3);
-                    R.Add((double)line[1]);
-                }
-
-                return R.ToArray();
-            }
 		}
         /// <param name="N">Number of runs</param>
         /// <param name="L">Plane length</param>
@@ -267,9 +256,6 @@ namespace Grid
             2. Denormalize
             3. Rewrite data including from current run (PDF),
             4. Normalize PDF
-            5. Read data from previous runs (Rpdf),
-            6. Denormalize
-            7. Get new Rpdf
             8. ReWrite Rpdf to file
         */
         public void RunEnsemble(int N, int L)
@@ -298,24 +284,28 @@ namespace Grid
             // 1. Read data from previous runs (PDF),
             // 2. Denormalize
             var pdf = Load(pdfPath);
-            double[] cdf = new double[pdf.Count];
+            var cdf = new List<double>();
 
             using (
                 var writer = 
-                    new StreamWriter(File.Open(pdfPath, FileMode.Create), Encoding.UTF8, 65536))
+                    new StreamWriter(File.Open(pdfPath, FileMode.Create), Encoding.UTF8, 65536)
+            )
             {
+                
                 // 3. Rewrite data including from current run (PDF),
                 foreach (int n in timesClusterOccured.Keys)
                 {
-                    pdf[n]++;
+                    if (pdf.ContainsKey(n))
+                        pdf[n] += timesClusterOccured[n];
+                    else
+                        pdf.Add(n, timesClusterOccured[n]);
                 }
                 
-                int i = 0;
                 // 4. Normalize PDF & get CDF
-                foreach (int n in pdf.Keys)
+                foreach (int n in pdf.Keys.ToList())
                 {
                     pdf[n] /= pdf.Count;
-                    cdf[i++] = pdf[n];
+                    cdf.Add(pdf[n]);
                     
                     writer.Write(
                         $"{n}\t{pdf[n]}\n"
@@ -323,14 +313,11 @@ namespace Grid
                 }
             }
 
-            // 5. Read data from previous runs (Rpdf),
-            // 6. Denormalize?
-            double[] Rpdf = LoadR(RpdfPath);
-
             int first = pdf.Keys.First();
             using (
                 var writer = 
-                    new StreamWriter(File.Open(RpdfPath, FileMode.Create), Encoding.UTF8, 65536))
+                    new StreamWriter(File.Open(RpdfPath, FileMode.Create), Encoding.UTF8, 65536)
+            )
             {
                 foreach (int n in pdf.Keys)
                 {
@@ -338,7 +325,8 @@ namespace Grid
 
                     // 7. Get new Rpdf
                     double R = Utilities.R_L(
-                        first, eta, L, Metrics.DiskRadius, cdf);
+                        first, eta, L, Metrics.DiskRadius, cdf.ToArray()
+                    );
 
                     // 8. ReWrite Rpdf to file
                     writer.Write(
