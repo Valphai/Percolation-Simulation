@@ -26,6 +26,7 @@ namespace Grid
         private void OnValidate()
         {
             binPrefab = AssetDatabase.LoadAssetAtPath<GridBin>("Assets/Prefabs/Grid/Bin.prefab");
+            bins = GetComponentsInChildren<GridBin>();
 
             if (bins.Length == 0 || !bins[0]) CreateBins();
         }
@@ -216,9 +217,9 @@ namespace Grid
                 }
             }
         }
-        private SortedDictionary<int, double> Load(string path) 
+        private SortedDictionary<int, int> Load(string path) 
         {
-            var pdf = new SortedDictionary<int, double>();
+            var pdf = new SortedDictionary<int, int>();
 
             try
             {
@@ -231,13 +232,7 @@ namespace Grid
                     while ((line = reader.ReadLine()) != null)
                     {
                         string[] subs = line.Split(' ', '\t');
-                        pdf.Add(Convert.ToInt32(subs[0]), Convert.ToDouble(subs[1]));
-                    }
-    
-                    // denormalize
-                    foreach (int n in pdf.Keys.ToList())
-                    {
-                        pdf[n] *= pdf.Count;
+                        pdf.Add(Convert.ToInt32(subs[0]), Convert.ToInt32(subs[1]));
                     }
                 }
             }
@@ -253,14 +248,14 @@ namespace Grid
         /// <param name="a">Disk radius</param>
         /* 
             1. Read data from previous runs (PDF),
-            2. Denormalize
             3. Rewrite data including from current run (PDF),
-            4. Normalize PDF
+            4. Normalize PDF to a different file
             8. ReWrite Rpdf to file
         */
         public void RunEnsemble(int N, int L)
         {
             string pdfPath = Path.Combine(Application.persistentDataPath, $"PDF_L={L}_a={Metrics.DiskRadius}.dat");
+            string cdfPath = Path.Combine(Application.persistentDataPath, $"CDF_L={L}_a={Metrics.DiskRadius}.dat");
             string RpdfPath = Path.Combine(Application.persistentDataPath, $"Rpdf={L}_a={Metrics.DiskRadius}.dat");
             
             SortedDictionary<int, int> timesClusterOccured = new SortedDictionary<int, int>();
@@ -282,34 +277,44 @@ namespace Grid
             }
 
             // 1. Read data from previous runs (PDF),
-            // 2. Denormalize
             var pdf = Load(pdfPath);
             var cdf = new List<double>();
 
             using (
-                var writer = 
+                var pdfWriter = 
                     new StreamWriter(File.Open(pdfPath, FileMode.Create), Encoding.UTF8, 65536)
             )
             {
-                
-                // 3. Rewrite data including from current run (PDF),
-                foreach (int n in timesClusterOccured.Keys)
+                using (
+                var cdfWriter = 
+                    new StreamWriter(File.Open(cdfPath, FileMode.Create), Encoding.UTF8, 65536)
+                )
                 {
-                    if (pdf.ContainsKey(n))
-                        pdf[n] += timesClusterOccured[n];
-                    else
-                        pdf.Add(n, timesClusterOccured[n]);
-                }
-                
-                // 4. Normalize PDF & get CDF
-                foreach (int n in pdf.Keys.ToList())
-                {
-                    pdf[n] /= pdf.Count;
-                    cdf.Add(pdf[n]);
+                    // 3. Rewrite data including from current run (PDF),
+                    foreach (int n in timesClusterOccured.Keys)
+                    {
+                        if (pdf.ContainsKey(n))
+                            pdf[n] += timesClusterOccured[n];
+                        else
+                            pdf.Add(n, timesClusterOccured[n]);
+                    }
                     
-                    writer.Write(
-                        $"{n}\t{pdf[n]}\n"
-                    );
+                    int i = 0;
+                    double sum = 0d;
+                    int nSum = pdf.Values.Sum();
+                    // 4. Normalize PDF & get CDF
+                    foreach (int n in pdf.Keys)
+                    {
+                        sum += (double)pdf[n] / nSum;
+                        cdf.Add(sum);
+                        
+                        pdfWriter.Write(
+                            $"{n}\t{pdf[n]}\n"
+                        );
+                        cdfWriter.Write(
+                            $"{n}\t{cdf[i++]}\n"
+                        );
+                    }
                 }
             }
 
