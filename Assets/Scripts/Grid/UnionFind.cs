@@ -1,4 +1,4 @@
-// #define DEBUG_MODE
+#define DEBUG_MODE
 using UnityEngine;
 #if DEBUG_MODE
 using VisualDebugging;
@@ -42,8 +42,8 @@ namespace Grid
             Vector3Int qToRootQ;
 
             // here we sum displacement vectors
-            int rootP = Find(p, out pToRootP, L);
-            int rootQ = Find(q, out qToRootQ, L);
+            int rootP = Find(p, out pToRootP);
+            int rootQ = Find(q, out qToRootQ);
     
             // in the same group
             if (rootP == rootQ) 
@@ -93,12 +93,20 @@ namespace Grid
                                                                 qToRootQ, L);
 #if DEBUG_MODE
                 VisualDebug.BeginFrame("rootP->rootQ", true);
-                VisualDebug.SetColour(Colours.lightBlue, Colours.veryDarkGrey);
-                VisualDebug.DrawPoint(Disks[rootQ].Position, Metrics.DiskRadius);
                 VisualDebug.DontShowNextElementWhenFrameIsInBackground();
+                VisualDebug.SetColour(Colours.darkRed, Colours.veryDarkGrey);
+                VisualDebug.DrawPointWithLabel(Disks[p].Position, Metrics.DiskRadius, "p");
+                VisualDebug.DrawPointWithLabel(Disks[q].Position, Metrics.DiskRadius, "q");
+                VisualDebug.DrawPointWithLabel(Disks[rootP].Position, Metrics.DiskRadius, "rootP");
+                VisualDebug.SetColour(Colours.lightBlue, Colours.veryDarkGrey);
+                VisualDebug.DrawPointWithLabel(Disks[rootQ].Position, Metrics.DiskRadius, "rootQ");
                 VisualDebug.SetColour(Colours.lightGreen, Colours.veryDarkGrey);
-                VisualDebug.DrawLineSegmentWithLabel(Disks[p].Position, Disks[rootQ].Position, 
+                VisualDebug.DrawLineSegmentWithLabel(Disks[rootP].Position, Disks[rootQ].Position, 
                                                 Disks[rootP].ToParentDisplacement.ToString());
+                VisualDebug.DrawLineSegmentWithLabel(Disks[q].Position, Disks[rootQ].Position, 
+                                                Disks[q].ToParentDisplacement.ToString());
+                VisualDebug.DrawLineSegmentWithLabel(Disks[p].Position, Disks[rootP].Position, 
+                                                Disks[p].ToParentDisplacement.ToString());
 #endif
             }
             else
@@ -110,12 +118,20 @@ namespace Grid
                                                                 pToRootP, L);
 #if DEBUG_MODE                                                     
                 VisualDebug.BeginFrame("rootQ->rootP", true);
-                VisualDebug.SetColour(Colours.lightBlue, Colours.veryDarkGrey);
-                VisualDebug.DrawPoint(Disks[rootP].Position, Metrics.DiskRadius);
                 VisualDebug.DontShowNextElementWhenFrameIsInBackground();
+                VisualDebug.SetColour(Colours.darkRed, Colours.veryDarkGrey);
+                VisualDebug.DrawPointWithLabel(Disks[p].Position, Metrics.DiskRadius, "p");
+                VisualDebug.DrawPointWithLabel(Disks[q].Position, Metrics.DiskRadius, "q");
+                VisualDebug.DrawPointWithLabel(Disks[rootQ].Position, Metrics.DiskRadius, "rootQ");
+                VisualDebug.SetColour(Colours.lightBlue, Colours.veryDarkGrey);
+                VisualDebug.DrawPointWithLabel(Disks[rootP].Position, Metrics.DiskRadius, "rootP");
                 VisualDebug.SetColour(Colours.lightGreen, Colours.veryDarkGrey);
-                VisualDebug.DrawLineSegmentWithLabel(Disks[rootP].Position, Disks[q].Position, 
+                VisualDebug.DrawLineSegmentWithLabel(Disks[rootP].Position, Disks[rootQ].Position, 
                                                 Disks[rootQ].ToParentDisplacement.ToString());
+                VisualDebug.DrawLineSegmentWithLabel(Disks[q].Position, Disks[rootQ].Position, 
+                                                Disks[q].ToParentDisplacement.ToString());
+                VisualDebug.DrawLineSegmentWithLabel(Disks[p].Position, Disks[rootP].Position, 
+                                                Disks[p].ToParentDisplacement.ToString());
 #endif
             }
             count--;
@@ -153,7 +169,7 @@ namespace Grid
 
             return -Disks[from].ToParentDisplacement + (toPos - fromPos) + toRootTo;
         }
-        public int Find(int p, out Vector3Int v1, int L) 
+        public int Find(int p, out Vector3Int v1) 
         {
             v1 = Vector3Int.zero;
             int startingP = p;
@@ -179,7 +195,8 @@ namespace Grid
                     parent[p] = root;
 
                     // next.displacement = v -= p.displacement
-                    Disks[next].ToParentDisplacement = v -= Disks[p].ToParentDisplacement;
+                    v -= Disks[p].ToParentDisplacement;
+                    Disks[next].ToParentDisplacement = v;
                     
                     p = next;
                 }
