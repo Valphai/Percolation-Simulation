@@ -12,5 +12,6 @@ namespace Grid
         public const float DiskFontSize = .7f;
         public const int SpawnLower = 8443;
         public const int SpawnHigher = 14871;
+        public const float EtaBoundary = 1.4f;
     }
 }

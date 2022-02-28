@@ -52,7 +52,7 @@ namespace Grid
 #endif
         public void SetupGrid(int nMin, int nMax)
         {
-    		n = UnityEngine.Random.Range(nMin, nMax);
+    		n = (int)(Metrics.EtaBoundary * L*L / Metrics.DiskRadius);
             PopulateGrid();
     	}
         public void CleanBins()
@@ -307,12 +307,13 @@ namespace Grid
                     {
                         sum += (double)pdf[n] / nSum;
                         cdf.Add(sum);
+                        double eta = Utilities.FillingFactor(n, L, Metrics.DiskRadius);
                         
                         pdfWriter.Write(
                             $"{n}\t{pdf[n]}\n"
                         );
                         cdfWriter.Write(
-                            $"{n}\t{cdf[i++]}\n"
+                            $"{n}\t{cdf[i++]}\t{eta}\n"
                         );
                     }
                 }
