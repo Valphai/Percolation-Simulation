@@ -1,4 +1,4 @@
-#define DEBUG_MODE
+// #define DEBUG_MODE
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -50,7 +50,7 @@ namespace Grid
             }
         }
 #endif
-        public void SetupGrid(int nMin, int nMax)
+        public void SetupGrid()
         {
     		n = (int)(Metrics.EtaBoundary * L*L / Metrics.DiskRadius);
             PopulateGrid();
@@ -71,7 +71,7 @@ namespace Grid
         }
         public void Run()
         {
-            SetupGrid(Grid.Metrics.SpawnLower, Grid.Metrics.SpawnHigher);
+            SetupGrid();
             CleanBins();
         }
         public void RefreshBins()

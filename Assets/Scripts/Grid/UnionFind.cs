@@ -1,4 +1,4 @@
-#define DEBUG_MODE
+// #define DEBUG_MODE
 using UnityEngine;
 #if DEBUG_MODE
 using VisualDebugging;
@@ -177,32 +177,26 @@ namespace Grid
             int root = p;
             while (root != parent[root])
             {
-                // sum these displacements along the path traversed to find
-                // the total displacement to the root site.
-                v1 += Disks[root].ToParentDisplacement;
+                // When we compress and splint a path, we sum these
+                // vectors to get the total displacement between each object
+                // on the path and its new parent.
 
+                v1 += Disks[root].ToParentDisplacement;
                 root = parent[root];
             }
 
+            Vector3Int v = v1;
             #region Path_Compression    
-                var v = v1;
                 while (p != root) 
                 {
-                    // We also update all displacements along the path
-                    // when we carry out the path compression
-
                     int next = parent[p];
-                    parent[p] = root;
+                    Vector3Int old = Disks[p].ToParentDisplacement;
+                    Disks[p].ToParentDisplacement = v;
 
-                    // next.displacement = v -= p.displacement
-                    v -= Disks[p].ToParentDisplacement;
-                    Disks[next].ToParentDisplacement = v;
-                    
+                    parent[p] = root;
+                    v -= old;
                     p = next;
                 }
-                // p.displacement = v1
-                Disks[startingP].ToParentDisplacement = v1;
-
 
             #endregion
             return root;
