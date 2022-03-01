@@ -25,7 +25,7 @@ It works for arbitrary sizes of the lattice.
  
 - The technique used to detect the wrapping cluster was taken from 
 
-    [Continuum Percolation Thresholds in Two Dimensions by Stephan Mertens and Cristopher Moore](https://arxiv.org/pdf/1209.4936.pdf/)
+    [Continuum Percolation Thresholds in Two Dimensions by Stephan Mertens and Cristopher Moore](https://arxiv.org/abs/1209.4936)
 
 - To debug this project and to show off these beautifull preview images I used
 
