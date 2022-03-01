@@ -3,31 +3,38 @@ using UnityEngine;
 
 namespace Grid
 {
+    [System.Serializable, ExecuteInEditMode]
     public class GridBin : MonoBehaviour
     {
-        public Coordinates Coordinates;
-        public RectTransform UiRect;
-        public List<Disk> Disks { get; private set; }
-        private GridBin[] neighbors;
-    
-        private void Awake()
+        [SerializeField] public Coordinates Coordinates;
+        public List<Disk> Disks { get; set; }
+        [SerializeField] public GridBin[] neighbors;
+
+        private void OnEnable()
         {
             Disks = new List<Disk>();
-            neighbors = new GridBin[8];
+            CleanDisks();
         }
         public void AddDisk(Disk disk, UnionFind uf, int L)
         {
-            float planeLength = Metrics.DiskRadius * 2 * L;
+            float planeLength = Metrics.Diameter * L;
 
+            Vector3 v1 = disk.Position;
+            Vector3Int thisBinPos = Coordinates.IntVectorPositon();
+            
             // check for intersecting disks in the same bin
             for (int i = 0; i < Disks.Count; i++)
             {
-                uf.Union(disk.DiskIndex, Disks[i].DiskIndex, L);
+                Vector3 v2 = Disks[i].Position;
+
+                // overlaps
+                if (Vector3.Distance(v2, v1) < Metrics.Diameter)
+                {
+                    uf.Union(disk.DiskIndex, Disks[i].DiskIndex, L);
+                }
             }
 
             Disks.Add(disk);
-            Vector3 v1 = disk.Position;
-            Vector3Int thisBinPos = Coordinates.IntVectorPositon();
 
             // go through all neigbors
             foreach (GridBin neighBin in neighbors)
@@ -60,10 +67,9 @@ namespace Grid
                             v2 -= Vector3.forward * planeLength;
                         }
                     }
-
-                    if (Vector3.Distance(v2, v1) < 2 * Metrics.DiskRadius)
+                    // overlaps
+                    if (Vector3.Distance(v2, v1) < Metrics.Diameter)
                     {
-                        // overlaps
                         uf.Union(disk.DiskIndex, neighbDisk.DiskIndex, L);
                     }
                 }
@@ -79,7 +85,10 @@ namespace Grid
     		neighbors[(int)direction] = bin;
     		bin.neighbors[(int)direction.Opposite()] = this;
     	}
-        public void CleanDisks() => Disks.Clear();
+        public void CleanDisks()
+        {
+            Disks.Clear();
+        }
     }
 }
 

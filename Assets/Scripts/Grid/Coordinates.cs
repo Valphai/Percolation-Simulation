@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace Grid
 {
+    [System.Serializable]
     public struct Coordinates
     {
         public int x { get; private set; }
@@ -14,8 +15,8 @@ namespace Grid
         public static Coordinates FromIntCoords(int x, int z) => new Coordinates(x, z);
         public static Coordinates FromVectorCoords(Vector3 position)
         {
-            float x = position.x / (Metrics.DiskRadius * 2f);
-            float z = position.z / (Metrics.DiskRadius * 2f);
+            float x = position.x / (Metrics.Diameter);
+            float z = position.z / (Metrics.Diameter);
             
             int iX = Mathf.RoundToInt(x);
             int iZ = Mathf.RoundToInt(z);
@@ -23,7 +24,6 @@ namespace Grid
             if (iX <= 0) iX = 0;
             if (iZ <= 0) iZ = 0; 
 
-    
             return new Coordinates(iX, iZ);
         }
         public Vector3Int IntVectorPositon()
@@ -33,10 +33,6 @@ namespace Grid
         public override string ToString() 
         {
     		return "(" + x.ToString() + ", " + z.ToString() + ")";
-    	}
-        public string ToStringOnSeparateLines()
-        {
-    		return x.ToString() + "\n" + z.ToString();
     	}
     }
 }

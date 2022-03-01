@@ -1,6 +1,8 @@
-using System.Collections.Generic;
-using System.Reflection;
+// #define DEBUG_MODE
 using UnityEngine;
+#if DEBUG_MODE
+using VisualDebugging;
+#endif
 
 namespace Grid
 {
@@ -10,21 +12,18 @@ namespace Grid
         public int firstClusterN;
         public Disk[] Disks { get; private set; }
         public bool FirstClusterOccured { get; private set; }
-        public List<List<Vector3>> Distances { get; private set; }
         public int[] parent { get; private set; }
-        private bool visualize;
-    
         /// <summary> size of each group </summary>
         private int[] size;
 
         /// <summary> number of groups </summary>
         private int count;
     
-        public UnionFind(int n, bool visuals)
+        public UnionFind(int n)
         {
-            Distances = new List<List<Vector3>>();
-
-            visualize = visuals;
+#if DEBUG_MODE
+            VisualDebug.Initialize();
+#endif
             count = n;
             parent = new int[n];
             size = new int[n];
@@ -33,12 +32,18 @@ namespace Grid
 
         public void Union(int p, int q, int L) 
         {
+#if DEBUG_MODE
+            VisualDebug.BeginFrame($"Union({p},{q})", true);
+            VisualDebug.DrawPoint(Disks[p].Position, Metrics.DiskRadius);
+            VisualDebug.DrawPoint(Disks[q].Position, Metrics.DiskRadius);
+            // if (p == Disks.Length - 1) VisualDebug.Save();
+#endif
             Vector3Int pToRootP;
             Vector3Int qToRootQ;
 
             // here we sum displacement vectors
-            int rootP = Find(p, out pToRootP, L);
-            int rootQ = Find(q, out qToRootQ, L);
+            int rootP = Find(p, out pToRootP);
+            int rootQ = Find(q, out qToRootQ);
     
             // in the same group
             if (rootP == rootQ) 
@@ -46,35 +51,33 @@ namespace Grid
                 // if displacement vec differ by +- L => 
                 // cluster has a nontrivial winding number around one or
                 // both directions on the torus.
-                if (System.Math.Abs(pToRootP.x - qToRootQ.x) >= L - 1 ||
-                    System.Math.Abs(pToRootP.z - qToRootQ.z) >= L - 1)
+                if (pToRootP.x - qToRootQ.x >= L - 1 ||
+                    qToRootQ.x - pToRootP.x >= L - 1 ||
+                    pToRootP.z - qToRootQ.z >= L - 1 ||
+                    qToRootQ.z - pToRootP.z >= L - 1)
                 {
-                    #region Debug
-                        var assembly = Assembly.GetAssembly(typeof(UnityEditor.Editor));
-                        var type = assembly.GetType("UnityEditor.LogEntries");
-                        var method = type.GetMethod("Clear");
-                        method.Invoke(new object(), null);
-                        Debug.Log(pToRootP);
-                        Debug.Log(qToRootQ);
-                    #endregion
-
                     FirstClusterOccured = true;
                     firstClusterN = p;
-
-                    if (visualize)
+#if DEBUG_MODE
+                    int biggestRoot = Find(p);
+                    VisualDebug.BeginFrame();
+                    VisualDebug.SetColour(Colours.lightRed);
+                    for (int i = 0; i < firstClusterN; i++)
                     {
-                        int biggestRoot = Find(p);
-                        for (int i = 0; i < firstClusterN; i++)
+                        if (Find(i) == biggestRoot)
                         {
-                            if (Find(i) == biggestRoot)
-                            {
-                                Disks[i].Color = Color.red;
-                            }
+                            VisualDebug.DrawPoint(Disks[i].Position, Metrics.DiskRadius);
                         }
-                        Disks[p].Color = Color.black;
-                        Disks[q].Color = Color.green;
-                        Disks[biggestRoot].Color = Color.cyan;
                     }
+                    VisualDebug.SetColour(Colours.lightBlue, Colours.veryDarkGrey);
+                    VisualDebug.DrawPoint(Disks[q].Position, Metrics.DiskRadius);
+                    VisualDebug.SetColour(Colours.lightGreen, Colours.veryDarkGrey);
+                    VisualDebug.DrawPoint(Disks[p].Position, Metrics.DiskRadius);
+                    VisualDebug.SetColour(Colours.white, Colours.veryDarkGrey);
+                    VisualDebug.DrawPoint(Disks[biggestRoot].Position, Metrics.DiskRadius);
+
+                    VisualDebug.Save();
+#endif
                 }
 
                 return;
@@ -88,7 +91,23 @@ namespace Grid
 
                 Disks[rootP].ToParentDisplacement = PeriodicShiftVector(q, p,
                                                                 qToRootQ, L);
-
+#if DEBUG_MODE
+                VisualDebug.BeginFrame("rootP->rootQ", true);
+                VisualDebug.DontShowNextElementWhenFrameIsInBackground();
+                VisualDebug.SetColour(Colours.darkRed, Colours.veryDarkGrey);
+                VisualDebug.DrawPointWithLabel(Disks[p].Position, Metrics.DiskRadius, "p");
+                VisualDebug.DrawPointWithLabel(Disks[q].Position, Metrics.DiskRadius, "q");
+                VisualDebug.DrawPointWithLabel(Disks[rootP].Position, Metrics.DiskRadius, "rootP");
+                VisualDebug.SetColour(Colours.lightBlue, Colours.veryDarkGrey);
+                VisualDebug.DrawPointWithLabel(Disks[rootQ].Position, Metrics.DiskRadius, "rootQ");
+                VisualDebug.SetColour(Colours.lightGreen, Colours.veryDarkGrey);
+                VisualDebug.DrawLineSegmentWithLabel(Disks[rootP].Position, Disks[rootQ].Position, 
+                                                Disks[rootP].ToParentDisplacement.ToString());
+                VisualDebug.DrawLineSegmentWithLabel(Disks[q].Position, Disks[rootQ].Position, 
+                                                Disks[q].ToParentDisplacement.ToString());
+                VisualDebug.DrawLineSegmentWithLabel(Disks[p].Position, Disks[rootP].Position, 
+                                                Disks[p].ToParentDisplacement.ToString());
+#endif
             }
             else
             {
@@ -97,10 +116,27 @@ namespace Grid
 
                 Disks[rootQ].ToParentDisplacement = PeriodicShiftVector(p, q,
                                                                 pToRootP, L);
-                                                                
+#if DEBUG_MODE                                                     
+                VisualDebug.BeginFrame("rootQ->rootP", true);
+                VisualDebug.DontShowNextElementWhenFrameIsInBackground();
+                VisualDebug.SetColour(Colours.darkRed, Colours.veryDarkGrey);
+                VisualDebug.DrawPointWithLabel(Disks[p].Position, Metrics.DiskRadius, "p");
+                VisualDebug.DrawPointWithLabel(Disks[q].Position, Metrics.DiskRadius, "q");
+                VisualDebug.DrawPointWithLabel(Disks[rootQ].Position, Metrics.DiskRadius, "rootQ");
+                VisualDebug.SetColour(Colours.lightBlue, Colours.veryDarkGrey);
+                VisualDebug.DrawPointWithLabel(Disks[rootP].Position, Metrics.DiskRadius, "rootP");
+                VisualDebug.SetColour(Colours.lightGreen, Colours.veryDarkGrey);
+                VisualDebug.DrawLineSegmentWithLabel(Disks[rootP].Position, Disks[rootQ].Position, 
+                                                Disks[rootQ].ToParentDisplacement.ToString());
+                VisualDebug.DrawLineSegmentWithLabel(Disks[q].Position, Disks[rootQ].Position, 
+                                                Disks[q].ToParentDisplacement.ToString());
+                VisualDebug.DrawLineSegmentWithLabel(Disks[p].Position, Disks[rootP].Position, 
+                                                Disks[p].ToParentDisplacement.ToString());
+#endif
             }
             count--;
-
+            
+            
         }
         private Vector3Int PeriodicShiftVector(int to, int from, 
             Vector3Int toRootTo, int L)
@@ -115,61 +151,52 @@ namespace Grid
             {
                 if ((toPos - fromPos).x == -(L - 1))
                 {
-                    newToX = toPos + Vector3Int.right * L;
+                    toPos += Vector3Int.right * L;
                 }
                 else if ((toPos - fromPos).x == L - 1)
                 {
-                    newToX = toPos - Vector3Int.right * L;
+                    toPos -= Vector3Int.right * L;
                 }
                 if ((toPos - fromPos).z == -(L - 1))
                 {
-                    newToZ = toPos + Vector3Int.forward * L;
+                    toPos += Vector3Int.forward * L;
                 }
                 else if ((toPos - fromPos).z == L - 1)
                 {
-                    newToZ = toPos - Vector3Int.forward * L;
+                    toPos -= Vector3Int.forward * L;
                 }
-
-                toPos = newToX + newToZ;
             }
 
             return -Disks[from].ToParentDisplacement + (toPos - fromPos) + toRootTo;
         }
-        public int Find(int p, out Vector3Int v1, int L) 
+        public int Find(int p, out Vector3Int v1) 
         {
             v1 = Vector3Int.zero;
-            var debugDistance = new List<Vector3>();
             int startingP = p;
 
             int root = p;
             while (root != parent[root])
             {
-                // sum these displacements along the path traversed to find
-                // the total displacement to the root site.
-                v1 += Disks[root].ToParentDisplacement;
+                // When we compress and splint a path, we sum these
+                // vectors to get the total displacement between each object
+                // on the path and its new parent.
 
+                v1 += Disks[root].ToParentDisplacement;
                 root = parent[root];
             }
 
+            Vector3Int v = v1;
             #region Path_Compression    
-                var v = v1;
                 while (p != root) 
                 {
-                    // We also update all displacements along the path
-                    // when we carry out the path compression
-
                     int next = parent[p];
-                    parent[p] = root;
+                    Vector3Int old = Disks[p].ToParentDisplacement;
+                    Disks[p].ToParentDisplacement = v;
 
-                    // next.displacement = v -= p.displacement
-                    Disks[next].ToParentDisplacement = v -= Disks[p].ToParentDisplacement;
-                    
+                    parent[p] = root;
+                    v -= old;
                     p = next;
                 }
-                // p.displacement = v1
-                Disks[startingP].ToParentDisplacement = v1;
-
-                Distances.Add(debugDistance);
 
             #endregion
             return root;
@@ -188,6 +215,11 @@ namespace Grid
 
         public void TickDisk(Disk disk, int i)
         {
+#if DEBUG_MODE
+            VisualDebug.BeginFrame($"{i}", true);
+            VisualDebug.SetColour(Colours.darkGrey, Colours.veryDarkGrey);
+            VisualDebug.DrawPoint(disk.Position, Metrics.DiskRadius);
+#endif
             disk.DiskIndex = i;
             Disks[i] = disk;
 

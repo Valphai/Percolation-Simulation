@@ -1,9 +1,7 @@
 {
     "name": "Calculations",
     "rootNamespace": "",
-    "references": [
-        "GUID:c4118ccc3a559bd40a58bb87a114010c"
-    ],
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

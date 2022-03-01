@@ -1,0 +1,32 @@
+# What this is
+
+This is essentially grid percolation taken a step further into contiuum percolation using Union find. This project was done to complete my Bachelor's thesis.
+
+It works for arbitrary sizes of the lattice.
+
+# Preview
+
+## 16x16
+
+![alt text](./Preview/16x16.gif)
+
+## 32x32
+
+![alt text](./Preview/32x321.png)
+![alt text](./Preview/32x322.png)
+
+## 64x64
+
+![alt text](./Preview/64x641.png)
+![alt text](./Preview/64x642.png)
+
+# Credits
+
+ 
+- The technique used to detect the wrapping cluster was taken from 
+
+    [Continuum Percolation Thresholds in Two Dimensions by Stephan Mertens and Cristopher Moore](https://arxiv.org/pdf/1209.4936.pdf/)
+
+- To debug this project and to show off these beautifull preview images I used
+
+    [Visual Debugging by Sebastian Lague](https://github.com/SebLague/Visual-Debug)
