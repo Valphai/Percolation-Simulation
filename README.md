@@ -1,8 +1,8 @@
 # What this is
 
-This is essentially grid percolation taken a step further into contiuum percolation using Union find. This project was done to complete my Bachelor's thesis.
+Awesome project done in Unity!
 
-It works for arbitrary sizes of the lattice.
+This is essentially grid percolation taken a step further into contiuum percolation using Union find. This project was done to complete my Bachelor's thesis. It works for arbitrary sizes of the lattice.
 
 # Preview
 
