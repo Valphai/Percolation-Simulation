@@ -52,7 +52,8 @@ namespace Grid
 #endif
         public void SetupGrid()
         {
-    		n = (int)(Metrics.EtaBoundary * L*L / Metrics.DiskRadius);
+            double RealL = L * Metrics.Diameter;
+    		n = (int)(Metrics.EtaBoundary * RealL * RealL / Utilities.S(Metrics.DiskRadius));
             PopulateGrid();
     	}
         public void CleanBins()

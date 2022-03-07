@@ -15,38 +15,26 @@ namespace Calculations
         /// <param name="L"> grid width slash height </param>
         /// <param name="a"> disk radius </param>
         /// </summary>
-        /// <returns> I think this should be the case: 1.127 ≤ η ≤ 1.12875 </returns>
-        public static double FillingFactor(double n, double L, float a) => MeanDensity(n, L) * a;
-
-        /// <summary>
-        /// Defined with φ
-        /// </summary>
-        /// <returns>total fraction φ of the plane covered by the objects</returns>
-        // public static double TotalArea(int n, int L, float a) => 1 - Mathf.Exp(-FillingFactor(n, L, a));
-
-        public static int Factorial(int n)
+        public static double FillingFactor(double n, double L, float r)
         {
-            int count = n;
-            int result = 1;
-    
-            while (count >= 1)
-            {
-                result *= count;
-                count--;
-            }
-            return result;
+            double RealL = L * 2 * r;
+            return MeanDensity(n, RealL) * S(r);
         }
+
+        public static double S(float r) => Math.PI * r * r;
+
         /// <param name="first"> first n entry in CDF </param>
         /// <param name="vals"> CDF </param>
         /// <returns> Poisson weights convolved with P_L </returns>
         public static double R_L(
             int first, double eta, double L, 
-            float a, double[] vals)
+            float r, double[] vals)
         {
-            double result = 0;
-            double weight = 1;
-            double weightSum = 0;
-            double lambda = eta * L * L / a;
+            double RealL = L * 2 * r;
+            double result = 0d;
+            double weight = 1d;
+            double weightSum = 0d;
+            double lambda = eta * RealL * RealL / S(r);
 
             // peak index
             int nHat = (int)Math.Floor(lambda);

@@ -201,18 +201,6 @@ namespace Grid
             #endregion
             return root;
         }
-        public int Find(int p)
-        {
-            while (p != parent[p])
-            {
-                int next = parent[p];
-                parent[p] = parent[next];
-                
-                p = next;
-            }
-            return p;
-        }
-
         public void TickDisk(Disk disk, int i)
         {
 #if DEBUG_MODE

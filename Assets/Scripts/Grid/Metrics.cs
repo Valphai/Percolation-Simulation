@@ -6,10 +6,6 @@ namespace Grid
         public const float Diameter = DiskRadius * 2;
         public const float DiskHeight = .01f;
         public const float BinHeight = .01f;
-        public const float BinLabelHeight = BinHeight + DiskHeight * .25f;
-        public const float DiskLabelHeight = BinHeight + DiskHeight * 2.25f;
-        public const float BinFontSize = .3f;
-        public const float DiskFontSize = .7f;
         public const float EtaBoundary = 6f;
     }
 }

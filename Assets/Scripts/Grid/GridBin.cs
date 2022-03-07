@@ -85,10 +85,7 @@ namespace Grid
     		neighbors[(int)direction] = bin;
     		bin.neighbors[(int)direction.Opposite()] = this;
     	}
-        public void CleanDisks()
-        {
-            Disks.Clear();
-        }
+        public void CleanDisks() => Disks.Clear();
     }
 }
 

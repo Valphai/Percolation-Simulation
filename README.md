@@ -4,6 +4,8 @@ Awesome project done in Unity!
 
 This is essentially grid percolation taken a step further into contiuum percolation using Union find. This project was done to complete my Bachelor's thesis. It works for arbitrary sizes of the lattice.
 
+This will only work in the editor. At the time as I was writing this, I figured it would be alot faster to debug in this way hence it remains in that state.
+
 # Preview
 
 ## 16x16
