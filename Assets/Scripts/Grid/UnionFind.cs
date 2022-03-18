@@ -1,4 +1,4 @@
-// #define DEBUG_MODE
+#define DEBUG_MODE
 using UnityEngine;
 #if DEBUG_MODE
 using VisualDebugging;
@@ -36,7 +36,6 @@ namespace Grid
             VisualDebug.BeginFrame($"Union({p},{q})", true);
             VisualDebug.DrawPoint(Disks[p].Position, Metrics.DiskRadius);
             VisualDebug.DrawPoint(Disks[q].Position, Metrics.DiskRadius);
-            // if (p == Disks.Length - 1) VisualDebug.Save();
 #endif
             Vector3Int pToRootP;
             Vector3Int qToRootQ;
@@ -143,8 +142,6 @@ namespace Grid
         {
             Vector3Int toPos = Disks[to].Coordinates.IntVectorPositon();
             Vector3Int fromPos = Disks[from].Coordinates.IntVectorPositon();
-            Vector3Int newToX = Vector3Int.zero;
-            Vector3Int newToZ = Vector3Int.zero;
 
             if ((toPos - fromPos).x == L - 1 || (toPos - fromPos).z == L - 1 ||
                 (toPos - fromPos).x == -(L - 1) || (toPos - fromPos).z == -(L - 1))
@@ -200,6 +197,17 @@ namespace Grid
 
             #endregion
             return root;
+        }
+        public int Find(int p)
+        {
+            while (p != parent[p])
+            {
+                int next = parent[p];
+                parent[p] = parent[next];
+                
+                p = next;
+            }
+            return p;
         }
         public void TickDisk(Disk disk, int i)
         {

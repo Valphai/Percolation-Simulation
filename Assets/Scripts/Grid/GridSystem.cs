@@ -1,4 +1,4 @@
-// #define DEBUG_MODE
+#define DEBUG_MODE
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -257,7 +257,6 @@ namespace Grid
         {
             string pdfPath = Path.Combine(Application.persistentDataPath, $"PDF_L={L}_a={Metrics.DiskRadius}.dat");
             string cdfPath = Path.Combine(Application.persistentDataPath, $"CDF_L={L}_a={Metrics.DiskRadius}.dat");
-            string RpdfPath = Path.Combine(Application.persistentDataPath, $"Rpdf={L}_a={Metrics.DiskRadius}.dat");
             
             SortedDictionary<int, int> timesClusterOccured = new SortedDictionary<int, int>();
 
@@ -317,28 +316,6 @@ namespace Grid
                             $"{n}\t{cdf[i++]}\t{eta}\n"
                         );
                     }
-                }
-            }
-
-            int first = pdf.Keys.First();
-            using (
-                var writer = 
-                    new StreamWriter(File.Open(RpdfPath, FileMode.Create), Encoding.UTF8, 65536)
-            )
-            {
-                foreach (int n in pdf.Keys)
-                {
-                    double eta = Utilities.FillingFactor(n, L, Metrics.DiskRadius);
-
-                    // 7. Get new Rpdf
-                    double R = Utilities.R_L(
-                        first, eta, L, Metrics.DiskRadius, cdf.ToArray()
-                    );
-
-                    // 8. ReWrite Rpdf to file
-                    writer.Write(
-                        $"{n}\t{R}\t{eta}\n"
-                    );
                 }
             }
         }

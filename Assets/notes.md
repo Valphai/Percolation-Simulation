@@ -17,7 +17,7 @@ L = plane width and height
 n = number of penetrable objects (disks)
 ρ = mean density = n/L^2 (lambda, intensity)
 a = object area
-η = ρa = filling factor = probability that a percolating cluster exists
+η = ρa = filling factor
 φ = 1 − e^−η = total fraction of the plane covered by the objects
 representative = cluster parent
 
