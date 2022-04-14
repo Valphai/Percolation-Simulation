@@ -13,38 +13,35 @@ Próg perkolacji - krytyczny zbiór obiektów, dla których istnieje "nieskończ
 
 ___
 
-L = plane width and height
-n = number of penetrable objects (disks)
-ρ = mean density = n/L^2 (lambda, intensity)
-a = object area
-η = ρa = filling factor
-φ = 1 − e^−η = total fraction of the plane covered by the objects
-representative = cluster parent
+- L = plane width and height
+- n = number of penetrable objects (disks)
+- ρ = mean density = n/L^2 (lambda, intensity)
+- a = object area
+- η = ρa = filling factor
+- φ = 1 − e^−η = total fraction of the plane covered by the objects
+- representative = cluster parent
 
-R_L(η) = wrapping probability functions 
-R^e_L(η) = the probability of any kind of wrapping cluster. 
-R^h_L(η) = the probability of a cluster that wraps horizontally.
-R^1_L(η) = the probability of a cluster that wraps horizontally, but not vertically
-R^b_L(η) = the probability of a cluster that wraps both horizontally and vertically
+- R_L(η) = wrapping probability functions 
+- R^e_L(η) = the probability of any kind of wrapping cluster. 
+- R^h_L(η) = the probability of a cluster that wraps horizontally.
+- R^1_L(η) = the probability of a cluster that wraps horizontally, but not vertically
+- R^b_L(η) = the probability of a cluster that wraps both horizontally and vertically
 
-horizontal and vertical wrapping probabilities are equal
+# First we throw a $\bold{certain}$ number of disks on the lattice. Get the pdf, make cdf.
 
-disks are thrown at random in the L square (Poisson point process)
+# $P(a <= X <= b)$ = probability, that a cluster occured for a number of disks from a range. $\bold{Zespół \; kanoniczny}$
 
-take a look at grid bin AddDisk, gotta fiddle with union find now
+$$\int_a^b f_X(x) dx$$
 
-they do both splitting and compression?
+$f_X$ = distribution density (PDF)
 
+kładziemy w układzie określoną liczbę dysków i badamy, czy zaszła perkolacja
 
-sum down all to smallest n => P_L(a, n) is non zero
-sum up all to highest n => P_L(a, n) is 1
+# $R(\eta)$ = probability that a cluster exists for a random number of disks n. $\bold{Wielki \; zespół\; kanoniczny}$
 
+$$R(\eta)=e^{-\lambda}\sum_{n=0}^{\infty} \frac{\lambda^n}{n!} P_L(n)$$
 
-for each simulation calculate ρ, then calculate η = ρa 
+- Poisson = P(wylosowanie n dysków)
+- $P_L(n)$ = P(cluster dla n dysków)
 
-THEN SUM THESE BOYS UP IN (3)
-
-(5) is essentially saying what critical factor η_L gives R_L = 1
-
-Problem now is no periodic boundaries, when summing path 
-cut part of the disk at the edge should be on the opposite side of the plane
+ustalamy prawdopodobieństwo, że dany punk układu jest zajęty przez dysk, ale nie ustalamy liczby dysków, a następnie badamy perkolację

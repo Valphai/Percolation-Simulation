@@ -1,6 +1,5 @@
 import math
 import pandas as pd
-import matplotlib.pyplot as plot
 
 r = 0.6
 
