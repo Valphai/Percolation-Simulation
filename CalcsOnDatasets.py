@@ -1,5 +1,7 @@
 import math
+from statistics import mean
 import pandas as pd
+import numpy as np
 
 r = 0.6
 
@@ -38,24 +40,22 @@ def smooth_with_poisson(values, eta, disc_radius, L, indx_in_vals):
     result /= weight_sum
     return result
 
-def define_dfs(prefix):
-    def define_df(L):
-        df = pd.read_csv(f"{prefix}={L}_a={r}.dat", "\t")
-        df.columns = ["n", "cdf", "eta"]
-        return df
+def define_df(prefix, L, cols):
+    df = pd.read_csv(f"{prefix}={L}_a={r}.dat", "\t")
+    df.columns = cols
+    return df
 
-    L = 16
+def define_dfs(prefix, Ls, cols):
     new_cdfs = []
-    for _ in range(1, 7):
-        new_cdfs.append(define_df(L))
-        L *= 2
+    for L in Ls:
+        new_cdfs.append(define_df(prefix, L, cols))
 
     return new_cdfs
 
 def normalize(column):
     return (column-column.min())/(column.max()-column.min())
 
-def assign_R(cdfs):
+def assign_R(cdfs, Ls):
     def assign_R(df, L):
         RealL = L * 2 * r
         df["cdf"] = df.apply(
@@ -63,22 +63,46 @@ def assign_R(cdfs):
             axis=1
         )
 
-    L = 16
-    for df in cdfs:
-        assign_R(df, L)
-        L *= 2
+    for i, df in enumerate(cdfs):
+        assign_R(df, Ls[i])
 
-def save_to_file(cdfs):
+def save_to_file(cdfs, Ls):
     def save(df, L):
         df.to_csv(f"R_L={L}_a={r}.dat", header=None, index=None, sep="\t")
 
-    L = 16
-    for df in cdfs:
-        save(df, L)
-        L *= 2
+    for i, df in enumerate(cdfs):
+        save(df, Ls[i])
 
+def uncertainties(Ls, Ns):
+    # formula = lambda R, N: math.sqrt((R * (1 - R)) / (N))
+    formula = lambda L, N : N**(-1/2)*L**(-3/4)
+    return [formula(L, N) for L, N in list(zip(Ls, Ns))]
+
+def ux(x):
+    n = len(x)
+    diff = [i - mean(x) for i in x]
+    squared_numbers = [x**2 for x in diff]
+    return math.sqrt((1/(n*(n-1)))*sum(squared_numbers))
 
 if __name__ == "__main__":
-    cdfs = define_dfs("CDF_L")
-    assign_R(cdfs)
-    save_to_file(cdfs)
+    # Ls = [5,8,10,12,16,20,24,32,40,48,64,80,90,100]
+    Ls = [16,32,64,128,256,512]
+    Rs = [0.6904709909162112, 0.6824121286474356, 0.6664942160649269, 0.6458464790241288, 0.6010857832572333, 0.5129756470463123]
+    etas = [ # y 16,32,64,128,256,512
+        1.123810661285237, 
+        1.1254063066419935, 
+        1.12651491897615, 
+        1.1268276086098574, 
+        1.1271262729482818, 
+        1.12751513652192
+    ]
+    print(mean(etas))
+    # pdfs = define_dfs("PDF_L", Ls, ["n", "N"])
+    # Ns = [sum(pdf["N"]) for pdf in pdfs]
+
+    # cdfs = define_dfs("CDF_L", Ls, ["n", "cdf", "eta"])
+    # assign_R(cdfs, Ls)
+    # save_to_file(cdfs, Ls)
+    # print(Ns)
+    # print(ux(etas))
+    # print(uncertainties(Rs, Ns))
