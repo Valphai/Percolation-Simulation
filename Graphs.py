@@ -5,11 +5,11 @@ from scipy.optimize import curve_fit
 from CalcsOnDatasets import normalize, define_dfs
 
 def fit(x, y, f):
-    popt, _ = curve_fit(f, x, y)
-    # y_line = f(x_future, *popt)
+    popt, pcov = curve_fit(f, x, y)
     func = lambda x: f(x, *popt)
+    perr = np.sqrt(np.diag(pcov))
 
-    return (popt, func)
+    return (popt, func, perr)
 
 def plot_fits(df, colors):
     
@@ -29,11 +29,11 @@ def plot_fits(df, colors):
         xvalues = line2d[0].get_xdata()
 
         # get etas
-        value.append(np.interp(R_critical, yvalues,xvalues)) 
+        # value.append(np.interp(R_critical, yvalues,xvalues)) 
         
         # get Rs
-        # value.append(np.interp(etas[etaidx], xvalues, yvalues))
-        # etaidx += 1
+        value.append(np.interp(etas[etaidx], xvalues, yvalues))
+        etaidx += 1
 
         return line2d
 
@@ -82,42 +82,17 @@ def eta_C(Ls):
         1.12712,
         1.12751
     ]
-    
-    # etas = [ # 5,8,10,12,16,20,24,32,40,48,64,80,90,100
-    #     # 1.0924358879439666, 
-    #     # 1.1210694783648496, 
-    #     # 1.1200673539564878, 
-    #     # 1.1242160598362503, 
-    #     1.1276616803293817, #
-    #     1.127161183386989, 
-    #     1.1269442754295838, 
-    #     1.1295837537191724, #
-    #     1.1282770466025258, 
-    #     1.1283937712477239, 
-    #     1.1285683032741898, #
-    #     1.1283650180842508, 
-    #     1.1278711227869513, 
-    #     1.128457740043094
-    # ]
-
-    # Ls_scaled = [L**(-1.93582 - 3/4) for L in Ls]
 
     func_fit = lambda x,p,a,b: p + a*x**(-b)
-    # popt, f = extrapolate(Ls_scaled, etas, fit, 0, 8*10**(-4), 10**(-5))
-    # f = extrapolate(Ls, etas, fit, min(Ls) - 10, max(Ls) + 10, 1)
 
     x_range = np.arange(0, max(Ls) + 100, 1)
-    coef, f = fit(Ls, etas, func_fit)
+    coef, f, perr = fit(Ls, etas, func_fit)
     etas_lowered = [coef[0] - eta for eta in etas]
     plot.plot(Ls, etas_lowered, "o", x_range, coef[0] - f(x_range), "-")
 
-    print(coef)
-
+    print(coef, perr)
 
     plot.xlim(10, 600)
-    # plot.ylim(1.1278, 1.1288)
-    # plot.yticks(np.arange(1.1278, 1.1288, 0.0001))
-    # plot.minorticks_on()
     plot.tick_params(which='both', width=1, labelsize=30)
     plot.tick_params(which='major', length=9)
     plot.tick_params(which='minor', length=4)
@@ -125,77 +100,38 @@ def eta_C(Ls):
     plot.yscale("log")
     plot.xlabel("L", fontsize=35)
     plot.ylabel("$\eta_L- \eta_\infty$", fontsize=33)
-    plot.errorbar(Ls, etas_lowered, yerr=uncertainties, fmt='o',ecolor = 'black',color='black')
+    plot.errorbar(Ls, etas_lowered, yerr=sigma_eta_L, fmt='o',ecolor = 'black',color='black')
     plot.show()
 
 def extrapolate(x, y, func, x_start, x_stop, x_step):
     x_range = np.arange(x_start, x_stop, x_step)
-    popt, f = fit(x, y, func)
+    popt, f, _ = fit(x, y, func)
     plot.plot(x, y, 'o', x_range, f(x_range), '-')
     
     return f
 
-def R_infty_minus_R_L(Ls):
+def infty_minus(Ls, ys, y_critical, y_label):
 
-    # R_above_eta = [ # 5,10,16,20,32,40,64,80,90,100
-    #     0.722530, 
-    #     0.696274, 
-    #     0.685804, 
-    #     0.687107, 
-    #     0.681242, 
-    #     0.685690, 
-    #     0.684740, 
-    #     0.684126, 
-    #     0.690037, 
-    #     0.682781
-    # ] # according to fit
-
-    # R_above_eta = [ # 5,10,16,20,32,40,64,80,90,100
-    #     0.736747, 
-    #     0.705400, 
-    #     0.702649, 
-    #     0.693790, 
-    #     0.690146, 
-    #     0.692428, 
-    #     0.693929, 
-    #     0.682830, 
-    #     0.687378, 
-    #     0.685125, 
-    #     0.682039, 
-    #     0.682894, 
-    #     0.688136, 
-    #     0.680107
-    # ] # discrete
-
-    R_above_eta = [ # 5,10,16,20,32,40,64,80,90,100
-        0.7375063257449366, 
-        0.7065466320311007, 
-        0.7030715316518507, 
-        0.6942830959131691, 
-        0.6921492949160272, 
-        0.6947629850219126, 
-        0.6950131114035678, 
-        0.6838660641101124, 
-        0.6888990855749351, 
-        0.6891639332679035, 
-        0.6863359871844703, 
-        0.6877740626714242, 
-        0.6934130049145162, 
-        0.6860547964419628
-    ] # previous eta = 1.12808
-
-    delta = [R_l - R_critical for R_l in R_above_eta]
+    delta = [y_critical - y for y in ys]
     x_future = np.arange(0,120,.1)
 
-    x, y = fit(Ls, delta, lambda x, a: x**(a), x_future)
+    generic_log_fit(
+        Ls, delta, 
+        "L", y_label, x_future
+    )
+
+def generic_log_fit(x, y, x_label, y_label, x_future=None):
+    popt, f, _ = fit(x, y, lambda x, a: x**(a))
     plot.xscale('log')
     plot.yscale('log')
     plot.tick_params(which='both', width=1, labelsize=33)
     plot.tick_params(which='major', length=9)
     plot.tick_params(which='minor', length=4)
-    plot.xlabel("L", fontsize=35)
-    plot.ylabel("$R_L(\eta_C)-R_\infty(\eta_C)$", fontsize=33)
-    plot.plot(Ls, delta, 'o', x, y, '-')
+    plot.xlabel(x_label, fontsize=35)
+    plot.ylabel(y_label, fontsize=33)
+    
+    plot.plot(x, y, 'o', x, f(x), '-')
+    
     plot.show()
 
 def interpolate_points(x, y, axis):
@@ -222,15 +158,11 @@ if __name__ == "__main__":
     R_critical = 0.690473
     eta_critical = 1.12758
     Ls = [16,32,64,128,256,512]
-    uncertainties = [0.004623225884996106, 0.0046558476044233086, 0.004714890308454124, 0.004782799177513486, 0.004896995456274903, 0.004998565976813291]
-    # Ls = [5,8,10,12,16,20,24,32,40,48,64,80,90,100]
-    # Ls = [16,20,24,32,40,48,64,80,90,100]
+    etas = [1.12381, 1.12540, 1.12651, 1.12682, 1.12712, 1.12751] # y 16,32,64,128,256,512
     BLACK = ["black" for _ in range(len(Ls))]
+    
+    sigma_R_L = [0.004623225884996106, 0.0046558476044233086, 0.004714890308454124, 0.004782799177513486, 0.004896995456274903, 0.004998565976813291]
+    # sigma_eta_L = [1.4/(L**(3/4)*9999**(1/2)) for L in Ls]
+    sigma_eta_L = [0.0017500875065630467, 0.0010406082573410733, 0.0006187493717802934, 0.00036791057766229446, 0.00021876093832038084, 0.00013007603216763416]
 
-    Rs = define_dfs("R_L", Ls, ["n", "cdf", "eta"])
-    # plot_dfs(Rs, BLACK)
-    plot_fits(Rs, BLACK)
-    # eta_C(Ls)
-
-    # print(interpolate_Rs(Rs, "x"))
-    # R_infty_minus_R_L(Ls)
+    eta_C(Ls)

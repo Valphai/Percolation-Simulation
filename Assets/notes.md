@@ -41,7 +41,7 @@ kładziemy w układzie określoną liczbę dysków i badamy, czy zaszła perkola
 
 $$R(\eta)=e^{-\lambda}\sum_{n=0}^{\infty} \frac{\lambda^n}{n!} P_L(n)$$
 
-- Poisson = P(wylosowanie n dysków)
+- Poisson = P(wylosowanie n dysków) (Rozkład prawdopodobieństwa)
 - $P_L(n)$ = P(cluster dla n dysków)
 
 ustalamy prawdopodobieństwo, że dany punk układu jest zajęty przez dysk, ale nie ustalamy liczby dysków, a następnie badamy perkolację

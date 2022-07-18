@@ -1,7 +1,6 @@
 import math
 from statistics import mean
 import pandas as pd
-import numpy as np
 
 r = 0.6
 
@@ -41,7 +40,7 @@ def smooth_with_poisson(values, eta, disc_radius, L, indx_in_vals):
     return result
 
 def define_df(prefix, L, cols):
-    df = pd.read_csv(f"{prefix}={L}_a={r}.dat", "\t")
+    df = pd.read_csv(f"data\{prefix}={L}_a={r}.dat", "\t")
     df.columns = cols
     return df
 
@@ -85,7 +84,6 @@ def ux(x):
     return math.sqrt((1/(n*(n-1)))*sum(squared_numbers))
 
 if __name__ == "__main__":
-    # Ls = [5,8,10,12,16,20,24,32,40,48,64,80,90,100]
     Ls = [16,32,64,128,256,512]
     Rs = [0.6904709909162112, 0.6824121286474356, 0.6664942160649269, 0.6458464790241288, 0.6010857832572333, 0.5129756470463123]
     etas = [ # y 16,32,64,128,256,512
@@ -97,12 +95,3 @@ if __name__ == "__main__":
         1.12751513652192
     ]
     print(mean(etas))
-    # pdfs = define_dfs("PDF_L", Ls, ["n", "N"])
-    # Ns = [sum(pdf["N"]) for pdf in pdfs]
-
-    # cdfs = define_dfs("CDF_L", Ls, ["n", "cdf", "eta"])
-    # assign_R(cdfs, Ls)
-    # save_to_file(cdfs, Ls)
-    # print(Ns)
-    # print(ux(etas))
-    # print(uncertainties(Rs, Ns))
